@@ -9,7 +9,7 @@ from enum import Enum
 
 
 # Define the various information gain methods
-class InformationGainMethods(Enum):
+class GainMethods(Enum):
     ENTROPY = 1
     MAJORITY = 2
     GINI = 3
@@ -69,7 +69,7 @@ def common(data, attr, labelCol):
     for example in data:
         countDict[example[labelCol]] = countDict[example[labelCol]] + 1
 
-    vals = list(countDict.valus())
+    vals = list(countDict.values())
     keys = list(countDict.keys())
     return keys[vals.index(max(vals))]
 
@@ -88,28 +88,75 @@ def splitData(data, attr, v):
 
 #####
 # Author: Evan Hrouda
+# Purpose: find the purity of the data with the given attribute value
+#          using the specified method
+#####
+def purity(val, attr, data, labelList, labelCol, gainMethod):
+    import math
+    # create a dictionary of the labels to count their occurence
+    labelCount = {}
+    for lbl in labelList:
+        labelCount[lbl] = 0
+
+    # count the occurence of each label value in the given data if they have the
+    # specified attribute value
+    totalOccurences = 0
+    for example in data:
+        if val == "all": # for finding the purity of the entire data subset
+            labelCount[example[labelCol]] = labelCount[example[labelCol]] + 1
+            totalOccurences += 1
+        elif example[attr] == val:
+            labelCount[example[labelCol]] = labelCount[example[labelCol]] + 1
+            totalOccurences += 1
+
+    # calculate the purity of the data using the specified method
+    if gainMethod == GainMethods.ENTROPY:
+        entropy = 0
+        for lbl in labelList:
+            if totalOccurences > 0:
+                p_i = labelCount[lbl]/totalOccurences
+                if p_i > 0:
+                    entropy += (p_i * math.log2(p_i))
+        return (-1*entropy), totalOccurences
+    #elif gainMethod == GainMethods.GINI:
+        #TODO
+    #elif gainMethod == GainMethods.MAJORITY:
+        #TODO
+
+#####
+# Author: Evan Hrouda
 # Purpose: find the attribute with the highest information gain to split on using the
 #          specified information gain technique
 #####
-def best(data, attrList, labelCol, infoGainMethod):
+def best(data, attrList, labelCol, gainMethod):
     # TODO: calculate the entropy/ME/gini of full set
+    setPurity, totalCount = purity("all", None, data, attrList[labelCol], labelCol, gainMethod)
 
     # TODO: calc the entropy/ME/gini of each attribute
+    attrGains = {}
     for attr in attrList:
-        for val in attr: # TODO: calc the entropy/ME/gini of ea val of the att
-            print()
-        # TODO: calc the expexted entropy/ME/gini of the attr
-        # TODO: calc the info gain of the attr
+        if attr == labelCol:
+            continue
+        attrPuritySum = 0
+        for val in attrList[attr]: # TODO: calc the entropy/ME/gini of ea val of the att and expexted entropy/ME/gini of the attr
+            attrValPurity, occur= purity(val, attr, data, attrList[labelCol], labelCol, gainMethod)
+            attrPuritySum += (occur/totalCount) * attrValPurity
+
+        # TODO: calc the gain of the attr
+        attrGains[attr] = setPurity- attrPuritySum
     
     # TODO: return attr w/ max info gain
-            
+    vals = list(attrGains.values())
+    keys = list(attrGains.keys())
+    return keys[vals.index(max(vals))]
 
 
 #####
 # Author: Evan Hrouda
 # Purpose: Perform the ID3 algorithm
 #####
-def ID3(data, hdrs, attr, labelCol, node, maxDepth, infoGainMethod):
+def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
+    import copy
     if not attr: # If attributes is empty, return leaf node with most common label
         node.label = node.parent.common
         return
@@ -124,9 +171,11 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, infoGainMethod):
         node.label = node.common
         return
 
-    node.attrSplit = best(data, attr, labelCol, infoGainMethod) # TODO
+    node.attrSplit = best(data, attr, labelCol, gainMethod) # TODO
 
     for v in attr[node.attrSplit]:
+        if v == labelCol:
+            continue
         # create a new tree node
         child = Tree(v)
         child.parent = node
@@ -139,32 +188,51 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, infoGainMethod):
         if not dataSplit: # TODO
             child.label = child.parent.common
         else:
-            del attr[node.attrSplit] # delete the attribute we just split on
-            ID3(dataSplit, hdrs, attr, labelCol, child)
+            newAttrList = copy.deepcopy(attr)
+            del newAttrList[node.attrSplit] # delete the attribute we just split on
+            ID3(dataSplit, hdrs, newAttrList, labelCol, child, maxDepth, gainMethod)
 
     return node
 
 # TODO: add cmd line args to get info
 if __name__=="__main__":
-    train_data = "/home/u1302032/CS6350/DecisionTree/car/train.csv"
-    test_data = "/home/u1302032/CS6350/DecisionTree/car/test.csv"
+    # train_data = "/home/u1302032/CS6350/DecisionTree/car/train.csv"
+    # test_data = "/home/u1302032/CS6350/DecisionTree/car/test.csv"
 
-    # columns
-    cols = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'label']
+    # # columns
+    # cols = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'label']
 
-    # attribute values
+    # # attribute values
+    # attrDict = {}
+    # attrDict["buying"] = ["vhigh", "high", "med", "low"]
+    # attrDict['maint'] = ['vhigh', 'high', 'med', 'low']
+    # attrDict['doors'] = ['2', '3', '4', '5more']
+    # attrDict['persons'] = ['2', '4', 'more']
+    # attrDict['lug_boot'] = ['small', 'med', 'big']
+    # attrDict['safety'] = ['low', 'med', 'high']
+    # attrDict['label'] = ['unacc', 'acc', 'good', 'vgood']
+    
+    train_data = "/home/u1302032/CS6350/DecisionTree/tennis.csv"
+
+    cols = ['outlook','temperature','humidity','wind','label']
     attrDict = {}
-    attrDict["buying"] = ["vhigh", "high", "med", "low"]
-    attrDict['maint'] = ['vhigh', 'high', 'med', 'low']
-    attrDict['doors'] = ['2', '3', '4', '5more']
-    attrDict['persons'] = ['2', '4', 'more']
-    attrDict['lug_boot'] = ['small', 'med', 'big']
-    attrDict['safety'] = ['low', 'med', 'high']
-    attrDict['label'] = ['unacc', 'acc', 'good', 'vgood']
+    attrDict['outlook'] = ['S','O','R']
+    attrDict['temperature'] = ['H','M','C']
+    attrDict['humidity'] = ['H','N','L']
+    attrDict['wind'] = ['S','W']
+    attrDict['label'] = ['+','-']
 
     rdr = parseCSV(train_data, cols)
 
-    root = Tree()
+    root = Tree(None)
     root.depth = 0
 
-    ID3(rdr, cols, attrDict, 'label', root, 6, InformationGainMethods.ENTROPY)
+    ID3(rdr, cols, attrDict, 'label', root, 6, GainMethods.ENTROPY)
+
+    print(root.attrSplit)
+    print(root.children[0].attrValue + "\t" + root.children[1].attrValue + "\t" + root.children[2].attrValue)
+    print(root.children[0].common + "\t" + "same"+ "\t" + root.children[2].common)
+    print(root.children[0].attrSplit + "\t" + root.children[1].label + "\t" + root.children[2].attrSplit)
+    print(root.children[0].children[0].attrValue + "\t" + root.children[0].children[1].attrValue + "\t" + root.children[0].children[2].attrValue + "\t" + "\t" + "\t" + root.children[2].children[0].attrValue + "\t" + root.children[2].children[1].attrValue)
+    print(root.children[0].children[0].label + "\t" + root.children[0].children[1].label + "\t" + root.children[0].children[2].label + "\t" + "\t" + "\t" + root.children[2].children[0].label + "\t" + root.children[2].children[1].label)
+    
