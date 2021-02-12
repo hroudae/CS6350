@@ -1,8 +1,7 @@
 ##########
 # Author: Evan Hrouda
-# Purpose: Implement ID3 decision tree learning algorithm using the dataset in the
-#          car directory. Training data is in car/train.csv and test data is in
-#          car/test.csv.
+# Purpose: Implement ID3 decision tree learning algorithm using three gain
+#          methods: information gain, majority error, and gini index
 ##########
 import csv
 from enum import Enum
@@ -118,10 +117,25 @@ def purity(val, attr, data, labelList, labelCol, gainMethod):
                 if p_i > 0:
                     entropy += (p_i * math.log2(p_i))
         return (-1*entropy), totalOccurences
-    #elif gainMethod == GainMethods.GINI:
-        #TODO
-    #elif gainMethod == GainMethods.MAJORITY:
-        #TODO
+    elif gainMethod == GainMethods.GINI:
+        giniSum = 0
+        for lbl in labelList:
+            if totalOccurences > 0:
+                p_i = labelCount[lbl]/totalOccurences
+                giniSum += (p_i * p_i)
+        return (1-giniSum), totalOccurences
+    elif gainMethod == GainMethods.MAJORITY:
+        vals = list(labelCount.values())
+        keys = list(labelCount.keys())
+        maxIndx = vals.index(max(vals))
+        errorSum = 0
+        for i in range(0,len(vals)):
+            if i != maxIndx and totalOccurences > 0:
+                errorSum += vals[i]
+        if totalOccurences > 0:
+            return (errorSum/totalOccurences), totalOccurences
+        else:
+            return 0, totalOccurences
 
 #####
 # Author: Evan Hrouda
@@ -129,23 +143,23 @@ def purity(val, attr, data, labelList, labelCol, gainMethod):
 #          specified information gain technique
 #####
 def best(data, attrList, labelCol, gainMethod):
-    # TODO: calculate the entropy/ME/gini of full set
+    # calculate the entropy/ME/gini of full set
     setPurity, totalCount = purity("all", None, data, attrList[labelCol], labelCol, gainMethod)
 
-    # TODO: calc the entropy/ME/gini of each attribute
+    # calc the entropy/ME/gini of each attribute
     attrGains = {}
     for attr in attrList:
         if attr == labelCol:
             continue
         attrPuritySum = 0
-        for val in attrList[attr]: # TODO: calc the entropy/ME/gini of ea val of the att and expexted entropy/ME/gini of the attr
+        for val in attrList[attr]: # calc the entropy/ME/gini of ea val of the att and expexted entropy/ME/gini of the attr
             attrValPurity, occur= purity(val, attr, data, attrList[labelCol], labelCol, gainMethod)
             attrPuritySum += (occur/totalCount) * attrValPurity
 
-        # TODO: calc the gain of the attr
-        attrGains[attr] = setPurity- attrPuritySum
+        # calc the gain of the attr
+        attrGains[attr] = setPurity - attrPuritySum
     
-    # TODO: return attr w/ max info gain
+    # return attr w/ max info gain
     vals = list(attrGains.values())
     keys = list(attrGains.keys())
     return keys[vals.index(max(vals))]
@@ -194,45 +208,19 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
 
     return node
 
-# TODO: add cmd line args to get info
-if __name__=="__main__":
-    # train_data = "/home/u1302032/CS6350/DecisionTree/car/train.csv"
-    # test_data = "/home/u1302032/CS6350/DecisionTree/car/test.csv"
-
-    # # columns
-    # cols = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'label']
-
-    # # attribute values
-    # attrDict = {}
-    # attrDict["buying"] = ["vhigh", "high", "med", "low"]
-    # attrDict['maint'] = ['vhigh', 'high', 'med', 'low']
-    # attrDict['doors'] = ['2', '3', '4', '5more']
-    # attrDict['persons'] = ['2', '4', 'more']
-    # attrDict['lug_boot'] = ['small', 'med', 'big']
-    # attrDict['safety'] = ['low', 'med', 'high']
-    # attrDict['label'] = ['unacc', 'acc', 'good', 'vgood']
-    
-    train_data = "/home/u1302032/CS6350/DecisionTree/tennis.csv"
-
-    cols = ['outlook','temperature','humidity','wind','label']
-    attrDict = {}
-    attrDict['outlook'] = ['S','O','R']
-    attrDict['temperature'] = ['H','M','C']
-    attrDict['humidity'] = ['H','N','L']
-    attrDict['wind'] = ['S','W']
-    attrDict['label'] = ['+','-']
-
-    rdr = parseCSV(train_data, cols)
-
-    root = Tree(None)
-    root.depth = 0
-
-    ID3(rdr, cols, attrDict, 'label', root, 6, GainMethods.ENTROPY)
-
-    print(root.attrSplit)
-    print(root.children[0].attrValue + "\t" + root.children[1].attrValue + "\t" + root.children[2].attrValue)
-    print(root.children[0].common + "\t" + "same"+ "\t" + root.children[2].common)
-    print(root.children[0].attrSplit + "\t" + root.children[1].label + "\t" + root.children[2].attrSplit)
-    print(root.children[0].children[0].attrValue + "\t" + root.children[0].children[1].attrValue + "\t" + root.children[0].children[2].attrValue + "\t" + "\t" + "\t" + root.children[2].children[0].attrValue + "\t" + root.children[2].children[1].attrValue)
-    print(root.children[0].children[0].label + "\t" + root.children[0].children[1].label + "\t" + root.children[0].children[2].label + "\t" + "\t" + "\t" + root.children[2].children[0].label + "\t" + root.children[2].children[1].label)
-    
+#####
+# Author: Evan Hrouda
+# Purpose: using the specifided decision tree, predict the label of the data set.
+#####
+def predict(data, attrDict, predictCol, root):
+    import copy
+    for example in data:
+        prediction = None
+        node = root#copy.deepcopy(root)
+        while node.label == None:
+            for child in node.children:
+                if child.attrValue == example[node.attrSplit]:
+                    node = child
+                    break
+        example[predictCol] = node.label
+    return data
