@@ -3,14 +3,15 @@
 # Purpose: Run the ID3 decision tree learning algorithm with the data specified
 #          in the homework 1 handout
 ##########
-#from DecisionTree import *
 import DecisionTree
+import PreProcess
 
 # 2.2 Run the learning algorithm with car/train.csv dataset then predict the both
 # the train.csv and test.csv datasets using all three gain methods and varying the
 # tree depth from 1 to 6
+print("********** Part 2.2 **********")
 
-# the training test datasets
+# the training and test datasets
 train_data = "car/train.csv"
 test_data = "car/test.csv"
 
@@ -93,3 +94,77 @@ print("Gain Method\t\tTraining Data\tTest Data")
 print(f"Information Gain\t{infoGainErrorData_train:.7f}\t{infoGainErrorData_test:.7f}")
 print(f"Majority Error\t\t{majorityErrorData_train:.7f}\t{majorityErrorData_test:.7f}")
 print(f"Gini Index\t\t{giniIndexErrorData_train:.7f}\t{giniIndexErrorData_test:.7f}")
+
+
+
+# 2.3: Modify ID3 implementation to support numerical attributes. Use a simple approach
+# to convert numerical feature to a binary one: choose median of the attribute values as
+# the threshold and examine if the feature is bigger or less than the threshold. Use the
+# bank dataset (bank/train.csv, bank/test.csv)
+print()
+print()
+print("********** Part 2.3 **********")
+
+# part a: treat "unknown" as a particular attribute value
+print("**********  Part a  **********")
+
+# the training and test datasets
+train_data = "bank/train.csv"
+test_data = "bank/test.csv"
+
+# column names
+cols = ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing',
+        'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays',
+        'previous', 'poutcome', 'y']
+
+# attribute values
+attrDict = {}
+attrDict["age"] = []
+attrDict['job'] = ["admin.", "unknown", "unemployed", "management", "housemaid",
+                   "entrepreneur", "student", "blue-collar", "self-employed", 
+                   "retired", "technician", "services"]
+attrDict['marital'] = ["married", "divorced", "single"]
+attrDict['education'] = ["unknown", "secondary", "primary", "tertiary"]
+attrDict['default'] = ["yes", "no"]
+attrDict['balance'] = []
+attrDict['housing'] = ["yes", "no"]
+attrDict['loan'] = ["yes", "no"]
+attrDict['contact'] = [ "unknown", "telephone", "cellular"]
+attrDict['day'] = []
+attrDict['month'] = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", 
+                     "oct", "nov", "dec"]
+attrDict['duration'] = []
+attrDict['campaign'] = []
+attrDict['pdays'] = []
+attrDict['previous'] = []
+attrDict['poutcome'] = ["unknown", "other", "failure", "success"]
+attrDict['y'] = ["yes", "no"]
+
+# very the tree depth up to 16
+maxTreeDepth = 16
+
+# parse the csv dataset files
+examples_train = DecisionTree.parseCSV(train_data, cols)
+examples_test = DecisionTree.parseCSV(test_data, cols)
+
+# find the median of each numeric attribute and convert it to a binary one
+attrDict, examples_train = PreProcess.numerical2binary_MedianThreshold(examples_train, cols, attrDict)
+
+gain = DecisionTree.GainMethods.ENTROPY
+depth = maxTreeDepth
+
+root = DecisionTree.Tree(None)
+root.depth = 0
+DecisionTree.ID3(examples_train, cols, attrDict, 'y', root, depth, gain)
+
+predictdata_train = DecisionTree.predict(examples_train, attrDict, "prediction", root)
+# predictdata_test = DecisionTree.predict(examples_test, attrDict, "prediction", root)
+
+total_train = 0
+wrong_train = 0
+for example in predictdata_train:
+    if example["y"] != example["prediction"]:
+        wrong_train += 1
+    total_train += 1
+
+print(f"{wrong_train} / {total_train} = {wrong_train/total_train}")

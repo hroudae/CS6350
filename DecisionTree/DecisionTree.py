@@ -162,7 +162,10 @@ def best(data, attrList, labelCol, gainMethod):
     # return attr w/ max info gain
     vals = list(attrGains.values())
     keys = list(attrGains.keys())
-    return keys[vals.index(max(vals))]
+    if not vals:
+        return None
+    else:
+        return keys[vals.index(max(vals))]
 
 
 #####
@@ -171,6 +174,7 @@ def best(data, attrList, labelCol, gainMethod):
 #####
 def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
     import copy
+
     if not attr: # If attributes is empty, return leaf node with most common label
         node.label = node.parent.common
         return
@@ -187,6 +191,10 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
 
     # find the best attribute to split on using the specified gain method
     node.attrSplit = best(data, attr, labelCol, gainMethod)
+    # if the data is not splittable, just use the most common label
+    if node.attrSplit == None:
+        node.label = node.common
+        return
 
     for v in attr[node.attrSplit]:
         if v == labelCol:
