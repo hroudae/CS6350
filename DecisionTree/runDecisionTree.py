@@ -3,12 +3,18 @@
 # Purpose: Run the ID3 decision tree learning algorithm with the data specified
 #          in the homework 1 handout
 ##########
-from DecisionTree import *
+#from DecisionTree import *
+import DecisionTree
 
-train_data = "/home/u1302032/CS6350/DecisionTree/car/train.csv"
-test_data = "/home/u1302032/CS6350/DecisionTree/car/test.csv"
+# 2.2 Run the learning algorithm with car/train.csv dataset then predict the both
+# the train.csv and test.csv datasets using all three gain methods and varying the
+# tree depth from 1 to 6
 
-# columns
+# the training test datasets
+train_data = "car/train.csv"
+test_data = "car/test.csv"
+
+# column names
 cols = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'label']
 
 # attribute values
@@ -21,41 +27,69 @@ attrDict['lug_boot'] = ['small', 'med', 'big']
 attrDict['safety'] = ['low', 'med', 'high']
 attrDict['label'] = ['unacc', 'acc', 'good', 'vgood']
 
-# train_data = "/home/u1302032/CS6350/DecisionTree/tennis.csv"
+# very the tree depth up to 6
+maxTreeDepth = 6
 
-# cols = ['outlook','temperature','humidity','wind','label']
-# attrDict = {}
-# attrDict['outlook'] = ['S','O','R']
-# attrDict['temperature'] = ['H','M','C']
-# attrDict['humidity'] = ['H','N','L']
-# attrDict['wind'] = ['S','W']
-# attrDict['label'] = ['+','-']
+# parse the csv dataset files
+examples_train = DecisionTree.parseCSV(train_data, cols)
+examples_test = DecisionTree.parseCSV(test_data, cols)
 
-rdr = parseCSV(train_data, cols)
-rdr_test = parseCSV(test_data, cols)
+infoGainErrorData_train = 0
+majorityErrorData_train = 0
+giniIndexErrorData_train = 0
 
-root = Tree(None)
-root.depth = 0
+infoGainErrorData_test = 0
+majorityErrorData_test = 0
+giniIndexErrorData_test = 0
 
-ID3(rdr, cols, attrDict, 'label', root, 6, GainMethods.ENTROPY)
+# using the training dataset to learn a decision tree for each method and tree depths
+for gain in DecisionTree.GainMethods:
+    for depth in range(1,maxTreeDepth+1):
+        root = DecisionTree.Tree(None)
+        root.depth = 0
+        DecisionTree.ID3(examples_train, cols, attrDict, 'label', root, depth, gain)
 
-# print(root.attrSplit)
-# print(root.children[0].attrValue + "\t" + root.children[1].attrValue + "\t" + root.children[2].attrValue)
-# print(root.children[0].common + "\t" + "same"+ "\t" + root.children[2].common)
-# print(root.children[0].attrSplit + "\t" + root.children[1].label + "\t" + root.children[2].attrSplit)
-# print(root.children[0].children[0].attrValue + "\t" + root.children[0].children[1].attrValue + "\t" + root.children[0].children[2].attrValue + "\t" + "\t" + "\t" + root.children[2].children[0].attrValue + "\t" + root.children[2].children[1].attrValue)
-# print(root.children[0].children[0].label + "\t" + root.children[0].children[1].label + "\t" + root.children[0].children[2].label + "\t" + "\t" + "\t" + root.children[2].children[0].label + "\t" + root.children[2].children[1].label)
+        # use the learned tree to predict the label of the training and test datasets
+        predictdata_train = DecisionTree.predict(examples_train, attrDict, "prediction", root)
+        predictdata_test = DecisionTree.predict(examples_test, attrDict, "prediction", root)
 
-#predictdata = predict(rdr_test, attrDict, "prediction", root)
-predictdata = predict(rdr, attrDict, "prediction", root)
+        # calculate the error of the training and test dataset
+        total_train = 0
+        wrong_train = 0
+        for example in predictdata_train:
+            if example["label"] != example["prediction"]:
+                wrong_train += 1
+            total_train += 1
+        total_test = 0
+        wrong_test = 0
+        for example in predictdata_test:
+            if example["label"] != example["prediction"]:
+                wrong_test += 1
+            total_test += 1
 
-total = 0
-wrong = 0
-#print("actual\tprediction")
-for example in predictdata:
-    #print(example["label"] + "\t" + example["prediction"])
-    if example["label"] != example["prediction"]:
-        wrong += 1
-    total += 1
+        # add the tree depth's error to the full one to calculate the average
+        if gain == DecisionTree.GainMethods.ENTROPY:
+            infoGainErrorData_train += (wrong_train/total_train)
+            infoGainErrorData_test += (wrong_test/total_test)
+        elif gain == DecisionTree.GainMethods.MAJORITY:
+            majorityErrorData_train += (wrong_train/total_train)
+            majorityErrorData_test += (wrong_test/total_test)
+        elif gain == DecisionTree.GainMethods.GINI:
+            giniIndexErrorData_train += (wrong_train/total_train)
+            giniIndexErrorData_test += (wrong_test/total_test)
 
-print(str(wrong) + " / " + str(total) + " = " + str(wrong/total))
+# average the errors
+infoGainErrorData_train /= 6
+majorityErrorData_train /= 6
+giniIndexErrorData_train /= 6
+
+infoGainErrorData_test /= 6
+majorityErrorData_test /= 6
+giniIndexErrorData_test /= 6
+
+gains = ["Information Gain", "Majority Error", "Gini Index"]
+print("Table of average prediction errors over tree depths 1 to 6 on each dataset")
+print("Gain Method\t\tTraining Data\tTest Data")
+print(f"Information Gain\t{infoGainErrorData_train:.7f}\t{infoGainErrorData_test:.7f}")
+print(f"Majority Error\t\t{majorityErrorData_train:.7f}\t{majorityErrorData_test:.7f}")
+print(f"Gini Index\t\t{giniIndexErrorData_train:.7f}\t{giniIndexErrorData_test:.7f}")
