@@ -13,11 +13,12 @@
 # Returns: the updated attribute dictionary and data
 #####
 def numerical2binary_MedianThreshold(data, cols, attrDict):
-    import statistics 
+    import statistics, copy
 
-    for attr in attrDict:
+    attrDictCopy = copy.deepcopy(attrDict)
+    for attr in attrDictCopy:
         # for all the numeric attributes
-        if not attrDict[attr]:
+        if not attrDictCopy[attr]:
             # collect the integer data and find the median
             valuesList = []
             for example in data:
@@ -30,6 +31,6 @@ def numerical2binary_MedianThreshold(data, cols, attrDict):
                     example[attr] = "larger"
                 else:
                     example[attr] = "smaller"
-            attrDict[attr] = ["smaller", "larger"]
+            attrDictCopy[attr] = ["smaller", "larger"]
 
-    return attrDict, data
+    return attrDictCopy, data

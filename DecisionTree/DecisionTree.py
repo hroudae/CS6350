@@ -163,6 +163,7 @@ def best(data, attrList, labelCol, gainMethod):
     vals = list(attrGains.values())
     keys = list(attrGains.keys())
     if not vals:
+        print("no split")
         return None
     else:
         return keys[vals.index(max(vals))]
@@ -194,6 +195,7 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
     # if the data is not splittable, just use the most common label
     if node.attrSplit == None:
         node.label = node.common
+        print(node.label)
         return
 
     for v in attr[node.attrSplit]:
@@ -222,10 +224,9 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
 # Purpose: using the specifided decision tree, predict the label of the data set.
 #####
 def predict(data, attrDict, predictCol, root):
-    import copy
     for example in data:
         prediction = None
-        node = root#copy.deepcopy(root)
+        node = root
         while node.label == None:
             for child in node.children:
                 if child.attrValue == example[node.attrSplit]:
