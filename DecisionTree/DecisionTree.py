@@ -185,7 +185,8 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
         node.label = node.common
         return
 
-    node.attrSplit = best(data, attr, labelCol, gainMethod) # TODO
+    # find the best attribute to split on using the specified gain method
+    node.attrSplit = best(data, attr, labelCol, gainMethod)
 
     for v in attr[node.attrSplit]:
         if v == labelCol:
@@ -197,9 +198,9 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
         node.children.append(child)
 
         # split the data over the attribute value
-        dataSplit = splitData(data, node.attrSplit, v) # TODO
+        dataSplit = splitData(data, node.attrSplit, v)
 
-        if not dataSplit: # TODO
+        if not dataSplit:
             child.label = child.parent.common
         else:
             newAttrList = copy.deepcopy(attr)
