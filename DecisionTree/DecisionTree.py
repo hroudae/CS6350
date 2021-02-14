@@ -173,7 +173,7 @@ def best(data, attrList, labelCol, gainMethod):
 # Author: Evan Hrouda
 # Purpose: Perform the ID3 algorithm
 #####
-def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
+def ID3(data, attr, labelCol, node, maxDepth, gainMethod):
     import copy
 
     if not attr: # If attributes is empty, return leaf node with most common label
@@ -215,7 +215,7 @@ def ID3(data, hdrs, attr, labelCol, node, maxDepth, gainMethod):
         else:
             newAttrList = copy.deepcopy(attr)
             del newAttrList[node.attrSplit] # delete the attribute we just split on
-            ID3(dataSplit, hdrs, newAttrList, labelCol, child, maxDepth, gainMethod)
+            ID3(dataSplit, newAttrList, labelCol, child, maxDepth, gainMethod)
 
     return node
 
