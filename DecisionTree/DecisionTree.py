@@ -173,17 +173,17 @@ def best(data, attrList, labelCol, gainMethod):
 # Author: Evan Hrouda
 # Purpose: Perform the ID3 algorithm
 #####
-def ID3(data, attr, labelCol, node, maxDepth, gainMethod):
+def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod):
     import copy
 
-    if not attr: # If attributes is empty, return leaf node with most common label
+    if not attrDict: # If attributes is empty, return leaf node with most common label
         node.label = node.parent.common
         return
     if sameLabel(data, labelCol): # if all examples have the same label, this branch is done
         node.label = data[0][labelCol]
         return
 
-    node.common = common(data, attr, labelCol) # find most common label in data
+    node.common = common(data, attrDict, labelCol) # find most common label in data
 
     # if the max tree depth has been reached, just label everything with the most common
     if node.depth == maxDepth:
@@ -191,14 +191,14 @@ def ID3(data, attr, labelCol, node, maxDepth, gainMethod):
         return
 
     # find the best attribute to split on using the specified gain method
-    node.attrSplit = best(data, attr, labelCol, gainMethod)
+    node.attrSplit = best(data, attrDict, labelCol, gainMethod)
     # if the data is not splittable, just use the most common label
     if node.attrSplit == None:
         node.label = node.common
         print(node.label)
         return
 
-    for v in attr[node.attrSplit]:
+    for v in attrDict[node.attrSplit]:
         if v == labelCol:
             continue
         # create a new tree node
@@ -213,9 +213,9 @@ def ID3(data, attr, labelCol, node, maxDepth, gainMethod):
         if not dataSplit:
             child.label = child.parent.common
         else:
-            newAttrList = copy.deepcopy(attr)
-            del newAttrList[node.attrSplit] # delete the attribute we just split on
-            ID3(dataSplit, newAttrList, labelCol, child, maxDepth, gainMethod)
+            newAttrDict = copy.deepcopy(attrDict)
+            del newAttrDict[node.attrSplit] # delete the attribute we just split on
+            ID3(dataSplit, newAttrDict, labelCol, child, maxDepth, gainMethod)
 
     return node
 
@@ -223,9 +223,8 @@ def ID3(data, attr, labelCol, node, maxDepth, gainMethod):
 # Author: Evan Hrouda
 # Purpose: using the specifided decision tree, predict the label of the data set.
 #####
-def predict(data, attrDict, predictCol, root):
+def predict(data, predictCol, root):
     for example in data:
-        prediction = None
         node = root
         while node.label == None:
             for child in node.children:

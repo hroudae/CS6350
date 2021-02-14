@@ -41,8 +41,8 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
             DecisionTree.ID3(examples_train, attrDict, labelCol, root, depth, gain)
 
             # use the learned tree to predict the label of the training and test datasets
-            predictdata_train = DecisionTree.predict(examples_train, attrDict, "prediction", root)
-            predictdata_test = DecisionTree.predict(examples_test, attrDict, "prediction", root)
+            predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
+            predictdata_test = DecisionTree.predict(examples_test, "prediction", root)
 
             # calculate the error of the training and test dataset
             total_train = 0
