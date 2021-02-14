@@ -12,7 +12,7 @@
 #          in the attribute dictionary should be empty
 # Returns: the updated attribute dictionary and data
 #####
-def numerical2binary_MedianThreshold(data, cols, attrDict):
+def numerical2binary_MedianThreshold(data, attrDict):
     import statistics, copy
 
     attrDictCopy = copy.deepcopy(attrDict)
@@ -34,3 +34,34 @@ def numerical2binary_MedianThreshold(data, cols, attrDict):
             attrDictCopy[attr] = ["smaller", "larger"]
 
     return attrDictCopy, data
+
+#####
+# Author: Evan Hrouda
+# Purpose: Find the majority value of an atrribute
+#####
+def findMajorityAttribute(data, attrDict, attrCol, unknown):
+    countDict = {}
+    for lbl in attrDict[attrCol]:
+        countDict[lbl] = 0
+    
+    for example in data:
+        if countDict[example[attrCol]] != unknown:
+            countDict[example[attrCol]] = countDict[example[attrCol]] + 1
+
+    vals = list(countDict.values())
+    keys = list(countDict.keys())
+    return keys[vals.index(max(vals))]
+
+#####
+# Author: Evan Hrouda
+# Purpose: Replace unknown attributes with the majority value of that attribute
+#####
+def replaceUnknown_MajorityAttribute(data, attrDict, unknown):
+    for attr in attrDict:
+        majorityValue = findMajorityAttribute(data, attrDict, attr, unknown)
+
+        for example in data:
+            if example[attr] == unknown:
+                example[attr] = majorityValue
+
+    return data

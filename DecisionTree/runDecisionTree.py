@@ -12,14 +12,18 @@ import PreProcess
 #          max tree depth. Print out the average error for the training and test data
 #          for each method.
 #####
-def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTreeDepth, numerical2binary):
+def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTreeDepth, numerical2binary, replaceUnknown, unknown):
     # parse the csv dataset files
     examples_train = DecisionTree.parseCSV(train_data, cols)
     examples_test = DecisionTree.parseCSV(test_data, cols)
 
     if numerical2binary:
-        temp, examples_train = PreProcess.numerical2binary_MedianThreshold(examples_train, cols, attrDict)
-        attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold(examples_test, cols, attrDict)
+        temp, examples_train = PreProcess.numerical2binary_MedianThreshold(examples_train, attrDict)
+        attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold(examples_test, attrDict)
+
+    if replaceUnknown:
+        examples_train = PreProcess.replaceUnknown_MajorityAttribute(examples_train, attrDict, unknown)
+        examples_test = PreProcess.replaceUnknown_MajorityAttribute(examples_test, attrDict, unknown)
 
     infoGainErrorData_train = 0
     majorityErrorData_train = 0
@@ -34,7 +38,7 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
         for depth in range(1,maxTreeDepth+1):
             root = DecisionTree.Tree(None)
             root.depth = 0
-            DecisionTree.ID3(examples_train, cols, attrDict, labelCol, root, depth, gain)
+            DecisionTree.ID3(examples_train, attrDict, labelCol, root, depth, gain)
 
             # use the learned tree to predict the label of the training and test datasets
             predictdata_train = DecisionTree.predict(examples_train, attrDict, "prediction", root)
@@ -75,7 +79,7 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
     giniIndexErrorData_test /= maxTreeDepth
 
     gains = ["Information Gain", "Majority Error", "Gini Index"]
-    print("Table of average prediction errors over tree depths 1 to 6 on each dataset")
+    print(f"Table of average prediction errors over tree depths 1 to {maxTreeDepth} on each dataset")
     print("Gain Method\t\tTraining Data\tTest Data")
     print(f"Information Gain\t{infoGainErrorData_train:.7f}\t{infoGainErrorData_test:.7f}")
     print(f"Majority Error\t\t{majorityErrorData_train:.7f}\t{majorityErrorData_test:.7f}")
@@ -104,7 +108,7 @@ attrDict['safety'] = ['low', 'med', 'high']
 attrDict['label'] = ['unacc', 'acc', 'good', 'vgood']
 
 # run the tests as specified in homework 1 part 2.2b
-createTreeAndPredict(train_data, test_data, cols, attrDict, 'label', 6, False)
+createTreeAndPredict(train_data, test_data, cols, attrDict, 'label', 6, False, False, None)
 
 
 
@@ -140,7 +144,7 @@ attrDict['default'] = ["yes", "no"]
 attrDict['balance'] = []
 attrDict['housing'] = ["yes", "no"]
 attrDict['loan'] = ["yes", "no"]
-attrDict['contact'] = [ "unknown", "telephone", "cellular"]
+attrDict['contact'] = ["unknown", "telephone", "cellular"]
 attrDict['day'] = []
 attrDict['month'] = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", 
                      "oct", "nov", "dec"]
@@ -152,4 +156,11 @@ attrDict['poutcome'] = ["unknown", "other", "failure", "success"]
 attrDict['y'] = ["yes", "no"]
 
 # run the tests as specified in homework 1 part 2.3a
-createTreeAndPredict(train_data, test_data, cols, attrDict, 'y', 16, True)
+createTreeAndPredict(train_data, test_data, cols, attrDict, 'y', 16, True, False, None)
+
+
+# part b: treat "unknown" as a missing attribute value - replace it with the majority value
+print()
+print()
+print("**********  Part b  **********")
+createTreeAndPredict(train_data, test_data, cols, attrDict, 'y', 16, True, True, "unknown")
