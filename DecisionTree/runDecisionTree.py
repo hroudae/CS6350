@@ -35,6 +35,14 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
 
     # using the training dataset to learn a decision tree for each method and tree depths
     for gain in DecisionTree.GainMethods:
+        if gain == DecisionTree.GainMethods.ENTROPY:
+            print("Table of prediction errors at each depth using gain method Information Gain")
+        elif gain == DecisionTree.GainMethods.GINI:
+            print("Table of prediction errors at each depth using gain method Gini Index")
+        elif gain == DecisionTree.GainMethods.MAJORITY:
+            print("Table of prediction errors at each depth using gain method Majority Error")
+        print("Depth\tTraining Data\tTest Data")
+
         for depth in range(1,maxTreeDepth+1):
             root = DecisionTree.Tree(None)
             root.depth = 0
@@ -58,6 +66,8 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
                     wrong_test += 1
                 total_test += 1
 
+            print(f"{depth}\t{wrong_train/total_train:.7f}\t{wrong_test/total_test:.7f}")
+
             # add the tree depth's error to the full one to calculate the average
             if gain == DecisionTree.GainMethods.ENTROPY:
                 infoGainErrorData_train += (wrong_train/total_train)
@@ -68,6 +78,7 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
             elif gain == DecisionTree.GainMethods.GINI:
                 giniIndexErrorData_train += (wrong_train/total_train)
                 giniIndexErrorData_test += (wrong_test/total_test)
+        print() # new line in between gain methods
 
     # average the errors
     infoGainErrorData_train /= maxTreeDepth
