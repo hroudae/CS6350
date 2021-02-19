@@ -1,7 +1,8 @@
-To run the program to produce the three tables specified in homework 1 part 2
-run the shell script run.sh. This will average the prediction errors over the
-varied tree depths for each gain method and the two datasets. The program that
-the shell script runs is runDecisionTree.py.
+To run the program to produce the tables specified in homework 1 part 2, run
+the shell script run.sh. This will average the prediction errors over the
+varied tree depths for each gain method and the two datasets as well as print
+the prediction error at each depth. The program that the shell script runs is
+runDecisionTree.py.
 
 Implementation details:
 The ID3 algorithm is implemented in DecicionTree.py:
