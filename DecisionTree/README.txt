@@ -21,12 +21,12 @@ the key where the prediction will be put in the example in the data, and root is
 the root of the decision tree produced by the ID3 function.
 
 PreProcess.py has two main preprocssing functions:
-numerical2binary_MedianThreshold(data, attrDict)
+numerical2binary_MedianThreshold_Replace(data, attrDict, medianList)
 converts numerical attribute values to binary ones by splitting over the median of
 the data. The values bigger than the median will be labeled "larger" and the ones
 equal to or smaller than the median will be labelled "smaller".
 
-replaceUnknown_MajorityAttribute(data, attrDict, unknown)
+replaceUnknown_MajorityAttribute_Replace(data, majorityAttrs, unknown)
 replaces unknown values with the majority value of the attribute.
 
 Other helper functions used in the ID3 implementation:
