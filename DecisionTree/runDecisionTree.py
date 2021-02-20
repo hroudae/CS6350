@@ -18,12 +18,16 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
     examples_test = DecisionTree.parseCSV(test_data, cols)
 
     if numerical2binary:
-        temp, examples_train = PreProcess.numerical2binary_MedianThreshold(examples_train, attrDict)
-        attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold(examples_test, attrDict)
+        medianList = PreProcess.numerical2binary_MedianThreshold(examples_train, attrDict)
+        # use the median of the training data to replace the numerical values of both datasets
+        temp, examples_train = PreProcess.numerical2binary_MedianThreshold_Replace(examples_train, attrDict, medianList)
+        attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(examples_test, attrDict, medianList)
 
     if replaceUnknown:
-        examples_train = PreProcess.replaceUnknown_MajorityAttribute(examples_train, attrDict, unknown)
-        examples_test = PreProcess.replaceUnknown_MajorityAttribute(examples_test, attrDict, unknown)
+        majorityAttrs = PreProcess.replaceUnknown_MajorityAttribute(examples_train, attrDict, unknown)
+        # replace unknown values with the majority attribute value in the training data
+        examples_train = PreProcess.replaceUnknown_MajorityAttribute_Replace(examples_train, majorityAttrs, unknown)
+        examples_test = PreProcess.replaceUnknown_MajorityAttribute_Replace(examples_test, majorityAttrs, unknown)
 
     infoGainErrorData_train = 0
     majorityErrorData_train = 0
