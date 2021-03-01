@@ -3,6 +3,7 @@
 # Purpose: Implement ID3 decision tree learning algorithm using three gain
 #          methods: information gain, majority error, and gini index
 ##########
+from copy import deepcopy
 import csv
 from enum import Enum
 
@@ -60,13 +61,13 @@ def sameLabel(data, labelCol):
 # Author: Evan Hrouda
 # Purpose: Find the most common label in a group of data
 #####
-def common(data, attr, labelCol):
+def common(data, attr, labelCol, D):
     countDict = {}
     for lbl in attr[labelCol]:
         countDict[lbl] = 0
     
-    for example in data:
-        countDict[example[labelCol]] = countDict[example[labelCol]] + 1
+    for idx, example in enumerate(data):
+        countDict[example[labelCol]] = countDict[example[labelCol]] + D[idx]
 
     vals = list(countDict.values())
     keys = list(countDict.keys())
@@ -77,20 +78,22 @@ def common(data, attr, labelCol):
 # Purpose: return a list of all the examples with the specified value
 #          for the given attribute
 #####
-def splitData(data, attr, v):
+def splitData(data, attr, v, D):
     newData = []
-    for example in data:
+    newD = []
+    for idx, example in enumerate(data):
         if example[attr] == v:
             newData.append(example)
+            newD.append(D[idx])
 
-    return newData
+    return newData, newD
 
 #####
 # Author: Evan Hrouda
 # Purpose: find the purity of the data with the given attribute value
 #          using the specified method
 #####
-def purity(val, attr, data, labelList, labelCol, gainMethod):
+def purity(val, attr, data, labelList, labelCol, gainMethod, D):
     import math
     # create a dictionary of the labels to count their occurence
     labelCount = {}
@@ -100,13 +103,13 @@ def purity(val, attr, data, labelList, labelCol, gainMethod):
     # count the occurence of each label value in the given data if they have the
     # specified attribute value
     totalOccurences = 0
-    for example in data:
+    for idx, example in enumerate(data):
         if val == "all": # for finding the purity of the entire data subset
-            labelCount[example[labelCol]] = labelCount[example[labelCol]] + 1
-            totalOccurences += 1
+            labelCount[example[labelCol]] = labelCount[example[labelCol]] + D[idx]
+            totalOccurences += D[idx]
         elif example[attr] == val:
-            labelCount[example[labelCol]] = labelCount[example[labelCol]] + 1
-            totalOccurences += 1
+            labelCount[example[labelCol]] = labelCount[example[labelCol]] + D[idx]
+            totalOccurences += D[idx]
 
     # calculate the purity of the data using the specified method
     if gainMethod == GainMethods.ENTROPY:
@@ -142,9 +145,9 @@ def purity(val, attr, data, labelList, labelCol, gainMethod):
 # Purpose: find the attribute with the highest information gain to split on using the
 #          specified information gain technique
 #####
-def best(data, attrList, labelCol, gainMethod):
+def best(data, attrList, labelCol, gainMethod, D):
     # calculate the entropy/ME/gini of full set
-    setPurity, totalCount = purity("all", None, data, attrList[labelCol], labelCol, gainMethod)
+    setPurity, totalCount = purity("all", None, data, attrList[labelCol], labelCol, gainMethod, D)
 
     # calc the entropy/ME/gini of each attribute
     attrGains = {}
@@ -153,7 +156,7 @@ def best(data, attrList, labelCol, gainMethod):
             continue
         attrPuritySum = 0
         for val in attrList[attr]: # calc the entropy/ME/gini of ea val of the att and expexted entropy/ME/gini of the attr
-            attrValPurity, occur= purity(val, attr, data, attrList[labelCol], labelCol, gainMethod)
+            attrValPurity, occur= purity(val, attr, data, attrList[labelCol], labelCol, gainMethod, D)
             attrPuritySum += (occur/totalCount) * attrValPurity
 
         # calc the gain of the attr
@@ -163,7 +166,6 @@ def best(data, attrList, labelCol, gainMethod):
     vals = list(attrGains.values())
     keys = list(attrGains.keys())
     if not vals:
-        print("no split")
         return None
     else:
         return keys[vals.index(max(vals))]
@@ -173,8 +175,12 @@ def best(data, attrList, labelCol, gainMethod):
 # Author: Evan Hrouda
 # Purpose: Perform the ID3 algorithm
 #####
-def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod):
+def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod, D):
     import copy
+    
+    # If there are no weights, set them to 1
+    if D == None:
+        D = [1 for i in range(len(data))]
 
     if not attrDict: # If attributes is empty, return leaf node with most common label
         node.label = node.parent.common
@@ -183,7 +189,7 @@ def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod):
         node.label = data[0][labelCol]
         return
 
-    node.common = common(data, attrDict, labelCol) # find most common label in data
+    node.common = common(data, attrDict, labelCol, D) # find most common label in data
 
     # if the max tree depth has been reached, just label everything with the most common
     if node.depth == maxDepth:
@@ -191,11 +197,10 @@ def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod):
         return
 
     # find the best attribute to split on using the specified gain method
-    node.attrSplit = best(data, attrDict, labelCol, gainMethod)
+    node.attrSplit = best(data, attrDict, labelCol, gainMethod, D)
     # if the data is not splittable, just use the most common label
     if node.attrSplit == None:
         node.label = node.common
-        print(node.label)
         return
 
     for v in attrDict[node.attrSplit]:
@@ -208,23 +213,25 @@ def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod):
         node.children.append(child)
 
         # split the data over the attribute value
-        dataSplit = splitData(data, node.attrSplit, v)
+        dataSplit, splitD = splitData(data, node.attrSplit, v, D)
 
         if not dataSplit:
             child.label = child.parent.common
         else:
             newAttrDict = copy.deepcopy(attrDict)
             del newAttrDict[node.attrSplit] # delete the attribute we just split on
-            ID3(dataSplit, newAttrDict, labelCol, child, maxDepth, gainMethod)
+            ID3(dataSplit, newAttrDict, labelCol, child, maxDepth, gainMethod, splitD)
 
     return node
 
 #####
 # Author: Evan Hrouda
-# Purpose: using the specifided decision tree, predict the label of the data set.
+# Purpose: using the specifidied decision tree, predict the label of the data set.
 #####
 def predict(data, predictCol, root):
-    for example in data:
+    import copy
+    predictData = copy.deepcopy(data)
+    for example in predictData:
         node = root
         while node.label == None:
             for child in node.children:
@@ -232,4 +239,18 @@ def predict(data, predictCol, root):
                     node = child
                     break
         example[predictCol] = node.label
-    return data
+    return predictData
+
+#####
+# Author: Evan Hrouda
+# Purpose: using the specified decision tree, predict the label of a single example
+#          and return only the label
+#####
+def predict_example(example, predictCol, root):
+    node = root
+    while node.label == None:
+        for child in node.children:
+            if child.attrValue == example[node.attrSplit]:
+                node = child
+                break
+    return node.label

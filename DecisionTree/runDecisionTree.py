@@ -50,7 +50,7 @@ def createTreeAndPredict(train_data, test_data, cols, attrDict, labelCol, maxTre
         for depth in range(1,maxTreeDepth+1):
             root = DecisionTree.Tree(None)
             root.depth = 0
-            DecisionTree.ID3(examples_train, attrDict, labelCol, root, depth, gain)
+            DecisionTree.ID3(examples_train, attrDict, labelCol, root, depth, gain, None)
 
             # use the learned tree to predict the label of the training and test datasets
             predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
