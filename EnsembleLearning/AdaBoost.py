@@ -97,3 +97,23 @@ def predict(data, predictCol, a_list, hyp_list):
         else:
             example[predictCol] = 1
     return predcitData
+
+#####
+# Author: Evan Hourda
+# Purpose: Predict the label of each example using the tree stumps in the hypothesis list.
+#          Return the error for each stump. NOTE: the prediction is note returned, only the error
+#####
+def stumpErrors(data, labelCol, predictCol, hyp_list):
+    import copy
+    stumpErrorList = []
+
+    for idx, hyp in enumerate(hyp_list):
+        predictdata = DecisionTree.predict(data, predictCol, hyp)
+        total = 0
+        wrong = 0
+        for example in predictdata:
+            if example[labelCol] != example[predictCol]:
+                wrong += 1
+            total += 1
+        stumpErrorList.append(wrong/total)
+    return stumpErrorList

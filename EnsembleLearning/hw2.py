@@ -16,6 +16,8 @@ print("********** Part 2a ***********")
 train_data = "bank/train.csv"
 test_data = "bank/test.csv"
 
+maxDepth = 500
+
 # column names
 cols = ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing',
         'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays',
@@ -52,11 +54,14 @@ medianList = PreProcess.numerical2binary_MedianThreshold(examples_train, attrDic
 temp, examples_train = PreProcess.numerical2binary_MedianThreshold_Replace(examples_train, attrDict, medianList)
 attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(examples_test, attrDict, medianList)
 
+stumpErrs_train = []
+stumpErrs_test = []
+
 errorFile = open("bank_errors.csv", 'w')
 
 print("T\tTraining Data\tTest Data")
 
-for depth in range(1, 501):
+for depth in range(1, maxDepth+1):
     examples_train, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_train, attrDict, 'y', 'no', 'yes')
     examples_test, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_test, attrDict, 'y', 'no', 'yes')
 
@@ -66,6 +71,10 @@ for depth in range(1, 501):
 
     predictdata_train = AdaBoost.predict(examples_train, 'prediction', a_list, hyp_list)
     predictdata_test = AdaBoost.predict(examples_test, 'prediction', a_list, hyp_list)
+    
+    if depth == maxDepth:
+        stumpErrs_train = AdaBoost.stumpErrors(examples_train, 'y', 'prediction', hyp_list)
+        stumpErrs_test = AdaBoost.stumpErrors(examples_test, 'y', 'prediction', hyp_list)
 
     predictdata_train, oldAttrDict = AdaBoost.numericalLabel2string(predictdata_train, AdaBoostAttrDict, 'y', 'no', 'yes')
     predictdata_train, oldAttrDict = AdaBoost.numericalLabel2string(predictdata_train, AdaBoostAttrDict, 'prediction', 'no', 'yes')
@@ -89,3 +98,12 @@ for depth in range(1, 501):
     errorFile.write(f"{depth},{wrong_train/total_train:.7f},{wrong_test/total_test:.7f}\n")
 
 errorFile.close()
+
+errorFile = open("bank_stumperrors.csv", 'w')
+print()
+print()
+print("Stump errors at each iteration")
+print("T\tTraining Data\tTest Data")
+for i in range(len(stumpErrs_train)):
+    print(f"{i+1}\t{stumpErrs_train[i]:.7f}\t{stumpErrs_test[i]:.7f}")
+    errorFile.write(f"{i+1},{stumpErrs_train[i]:.7f},{stumpErrs_test[i]:.7f}\n")
