@@ -101,7 +101,7 @@ def predict(data, predictCol, a_list, hyp_list):
 #####
 # Author: Evan Hourda
 # Purpose: Predict the label of each example using the tree stumps in the hypothesis list.
-#          Return the error for each stump. NOTE: the prediction is note returned, only the error
+#          Return the error for each stump. NOTE: the prediction is not returned, only the error
 #####
 def stumpErrors(data, labelCol, predictCol, hyp_list):
     import copy
