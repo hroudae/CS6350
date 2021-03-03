@@ -1,4 +1,6 @@
 cs6350.code-workspace
 DecisionTree/tennis.csv
+DecisionTree/tennis_test.py
 DecisionTree/__pycache__/
+EnsembleLearning/__pycache__/
 .vscode/

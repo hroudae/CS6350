@@ -8,6 +8,9 @@
 # Author: Evan Hrouda
 # Purpose: Find the median of numerical attributes
 #####
+from statistics import quantiles
+
+
 def numerical2binary_MedianThreshold(data, attrDict):
     import statistics
 
@@ -83,3 +86,46 @@ def replaceUnknown_MajorityAttribute_Replace(data, majorityAttrs, unknown):
                 example[attr] = majorityAttrs[attr]
 
     return data
+
+#####
+# Author: Evan Hrouda
+# Purpose: Calculate the quartiles  cut points for replacing continuous attributes
+#####
+def replaceContinuous_Quartiles(data, attrDict):
+    import statistics
+
+    quartilesList = {}
+    for attr in attrDict:
+        # for all the numeric attributes
+        if not attrDict[attr]:
+            # collect the integer data and find the median
+            valuesList = []
+            for example in data:
+                valuesList.append(int(example[attr]))
+            quartiles = statistics.quantiles(valuesList, n=4)
+            quartilesList[attr] = quartiles
+
+    return quartilesList
+
+#####
+# Author: Evan Hrouda
+# Purpose: replace all the numerical attributes with it's quantile number
+#####
+def replaceContinuous_Quartiles_Replace(data, attrDict, quartilesList):
+    import copy
+    attrDictCopy = copy.deepcopy(attrDict)
+
+    for attr in quartilesList:
+        # replace the attribute value with the new threshold value
+        for example in data:
+            if int(example[attr]) < quartilesList[attr][0]:
+                example[attr] = 'Q1'
+            elif int(example[attr]) < quartilesList[attr][1]:
+                example[attr] = 'Q2'
+            elif int(example[attr]) < quartilesList[attr][2]:
+                example[attr] = 'Q3'
+            else:
+                example[attr] = 'Q4'
+        attrDictCopy[attr] = ["Q1", "Q2", 'Q3', 'Q4']
+
+    return attrDictCopy, data

@@ -17,7 +17,7 @@ Ouput:
 
 - data: a list of dictionaries where each example is a dictionary whose keys are the attribute column names and the values are the values for that example
 
-To learn a decison tree, the function DecisionTree.ID3(data, attrDict, labelCol, node, maxDepth, gainMethod) is called.
+To learn a decison tree, the function DecisionTree.ID3(data, attrDict, labelCol, node, maxDepth, gainMethod, D) is called.
 
 Inputs:
 
@@ -27,6 +27,7 @@ Inputs:
 - node: a root DecisionTree.Tree(None) node with depth set to 0 on which the decision tree is built
 - maxDepth: The maxium depth of the decision tree
 - gainMethod: the gain method to use when splitting the data. The DecisionTree.GainMethods are ENTROPY for information gain, GINI for gini index, and MAJORITY for majority error.
+- D: a list of weights corresponding to the index of the example in data. If D is None, weights are assumed to be 1
 
 Output:
 
