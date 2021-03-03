@@ -251,8 +251,15 @@ def ID3_RandTree(data, attrDict, labelCol, node, maxDepth, gainMethod, D, featur
 
     # limit the feature set choices to a random sample of the specified size
     # if there are less attributes to choose from than the desired set size, use them all
+    attrSamples = {}
     try:
-        attrSamples = random.sample(attrDict, k=featureSetSize)
+        #TODO: this needs a list and returns a list
+        newAttrDict = copy.deepcopy(attrDict)
+        del newAttrDict[labelCol]
+        attrSamplesList = random.sample(list(newAttrDict), k=featureSetSize)
+        for attr in attrSamplesList:
+            attrSamples[attr] = attrDict[attr]
+        attrSamples[labelCol] = attrDict[labelCol]
     except ValueError:
         attrSamples = attrDict
     # find the best attribute to split on using the specified gain method and sample set
