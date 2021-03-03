@@ -226,6 +226,65 @@ def ID3(data, attrDict, labelCol, node, maxDepth, gainMethod, D):
 
 #####
 # Author: Evan Hrouda
+# Purpose: Perform the ID3 algorithm
+#####
+def ID3_RandTree(data, attrDict, labelCol, node, maxDepth, gainMethod, D, featureSetSize):
+    import copy, random
+    
+    # If there are no weights, set them to 1
+    if D == None:
+        D = [1 for i in range(len(data))]
+
+    if not attrDict: # If attributes is empty, return leaf node with most common label
+        node.label = node.parent.common
+        return
+    if sameLabel(data, labelCol): # if all examples have the same label, this branch is done
+        node.label = data[0][labelCol]
+        return
+
+    node.common = common(data, attrDict, labelCol, D) # find most common label in data
+
+    # if the max tree depth has been reached, just label everything with the most common
+    if node.depth == maxDepth:
+        node.label = node.common
+        return
+
+    # limit the feature set choices to a random sample of the specified size
+    # if there are less attributes to choose from than the desired set size, use them all
+    try:
+        attrSamples = random.sample(attrDict, k=featureSetSize)
+    except ValueError:
+        attrSamples = attrDict
+    # find the best attribute to split on using the specified gain method and sample set
+    node.attrSplit = best(data, attrSamples, labelCol, gainMethod, D)
+    # if the data is not splittable, just use the most common label
+    if node.attrSplit == None:
+        node.label = node.common
+        return
+
+    for v in attrDict[node.attrSplit]:
+        if v == labelCol:
+            continue
+        # create a new tree node
+        child = Tree(v)
+        child.parent = node
+        child.depth = child.parent.depth + 1
+        node.children.append(child)
+
+        # split the data over the attribute value
+        dataSplit, splitD = splitData(data, node.attrSplit, v, D)
+
+        if not dataSplit:
+            child.label = child.parent.common
+        else:
+            newAttrDict = copy.deepcopy(attrDict)
+            del newAttrDict[node.attrSplit] # delete the attribute we just split on
+            ID3(dataSplit, newAttrDict, labelCol, child, maxDepth, gainMethod, splitD)
+
+    return node
+
+#####
+# Author: Evan Hrouda
 # Purpose: using the specifidied decision tree, predict the label of the data set.
 #####
 def predict(data, predictCol, root):
