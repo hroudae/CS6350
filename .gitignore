@@ -3,4 +3,5 @@ DecisionTree/tennis.csv
 DecisionTree/tennis_test.py
 DecisionTree/__pycache__/
 EnsembleLearning/__pycache__/
+LinearRegression/__pycache__/
 .vscode/
