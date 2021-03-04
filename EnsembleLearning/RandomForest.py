@@ -23,7 +23,7 @@ def RandomForests(data, attrDict, labelCol, gainMethod, T, featureSetSize, sampl
         # learn a full decision tree based on those samples with no depth limit
         root = DecisionTree.Tree(None)
         root.depth = 0
-        DecisionTree.ID3_RandTree(data, attrDict, labelCol, root, inf, gainMethod, None, featureSetSize)
+        DecisionTree.ID3_RandTree(samples, attrDict, labelCol, root, inf, gainMethod, None, featureSetSize)
         forest.append(root)
 
     # return the list of trees
