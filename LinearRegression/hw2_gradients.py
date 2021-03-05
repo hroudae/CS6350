@@ -38,12 +38,12 @@ print(f"The learned weight vector: {wghts}")
 test_x, test_y = utilities.createInputMatrices(examples_test, 'slump')
 print(f"Test data cost function value: {utilities.costValue(wghts,test_x,test_y)}")
 
-# with open("concrete_costvals_bgd.csv", "w") as f:
-#     f.write("Iteration,Cost Function Value\n")
-#     for i in range(len(costs)):
-#         f.write(f"{i+1},{costs[i]}\n")
+with open("concrete_costvals_bgd.csv", "w") as f:
+    f.write("Iteration,Cost Function Value\n")
+    for i in range(len(costs)):
+        f.write(f"{i+1},{costs[i]}\n")
 
-# print("The cost function value at each iteration was written to concrete_costvals_bgd.csv")
+print("The cost function value at each iteration was written to concrete_costvals_bgd.csv")
 
 
 
@@ -64,12 +64,12 @@ print(f"The learned weight vector: {wghts}")
 print(f"Converges: {converge}")
 print(f"Test data cost function value: {utilities.costValue(wghts,test_x,test_y)}")
 
-# with open("concrete_costvals_sgd.csv", "w") as f:
-#     f.write("Iteration,Cost Function Value\n")
-#     for i in range(len(costs)):
-#         f.write(f"{i+1},{costs[i]}\n")
+with open("concrete_costvals_sgd.csv", "w") as f:
+    f.write("Iteration,Cost Function Value\n")
+    for i in range(len(costs)):
+        f.write(f"{i+1},{costs[i]}\n")
 
-# print("The cost function value at each iteration was written to concrete_costvals_sgd.csv")
+print("The cost function value at each iteration was written to concrete_costvals_sgd.csv")
 
 
 
