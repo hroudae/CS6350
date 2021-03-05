@@ -4,4 +4,4 @@
 python3 EnsembleLearning/hw2_adaboost.py
 python3 EnsembleLearning/hw2_baggedtrees.py
 python3 EnsembleLearning/hw2_randomforests.py
-python3 LinearRegression/hw2_batchgrad.py
+python3 LinearRegression/hw2_gradients.py
