@@ -89,7 +89,7 @@ for sz in subsetSizes:
             errorFile.write(f"{depth},{wrong_train/total_train:.7f},{wrong_test/total_test:.7f}\n")
 
 print("Training and Test dataset errors per number of trees written to bank_errors_randforests_featsz[sz].csv")
-print("where [sz] is the size of the number pf features randomly selected in tree creation.")
+print("where [sz] is the size of the number of features randomly selected in tree creation.")
 
 
 

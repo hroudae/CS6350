@@ -25,7 +25,7 @@ def StochasticGradientDescent(x, y, r, iterations):
         wghts = newWghts
         # check convergence (calculate cost function)
         costVal = utilities.costValue(wghts, x, y)
-        if abs(costVal - costs[-1]) > 10e-10:
+        if abs(costVal - costs[-1]) < 10e-6:
             converge = True
         costs.append(costVal)
 

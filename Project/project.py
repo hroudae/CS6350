@@ -63,10 +63,14 @@ labelCol = 'income>50K'
 examples_train = DecisionTree.parseCSV(train_data, cols)[1:]
 examples_test = DecisionTree.parseCSV(test_data, cols_test)[1:]
 
-quartilesList = PreProcess.replaceContinuous_Quartiles(examples_train, attrDict)
+# quartilesList = PreProcess.replaceContinuous_Quartiles(examples_train, attrDict)
+# # use the median of the training data to replace the numerical values of both datasets
+# temp, examples_train = PreProcess.replaceContinuous_Quartiles_Replace(examples_train, attrDict, quartilesList)
+# attrDict, examples_test = PreProcess.replaceContinuous_Quartiles_Replace(examples_test, attrDict, quartilesList)
+medianList = PreProcess.numerical2binary_MedianThreshold(examples_train, attrDict)
 # use the median of the training data to replace the numerical values of both datasets
-temp, examples_train = PreProcess.replaceContinuous_Quartiles_Replace(examples_train, attrDict, quartilesList)
-attrDict, examples_test = PreProcess.replaceContinuous_Quartiles_Replace(examples_test, attrDict, quartilesList)
+temp, examples_train = PreProcess.numerical2binary_MedianThreshold_Replace(examples_train, attrDict, medianList)
+attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(examples_test, attrDict, medianList)
 
 # for depth in range(1,20):
 #     root = DecisionTree.Tree(None)
@@ -87,13 +91,34 @@ attrDict, examples_test = PreProcess.replaceContinuous_Quartiles_Replace(example
 
 #     print(f"{depth}\t{wrong_train/total_train:.7f}")
 
-root = DecisionTree.Tree(None)
-root.depth = 0
-DecisionTree.ID3(examples_train, attrDict, labelCol, root, 6, DecisionTree.GainMethods.ENTROPY, None)
+# root = DecisionTree.Tree(None)
+# root.depth = 0
+# DecisionTree.ID3(examples_train, attrDict, labelCol, root, 6, DecisionTree.GainMethods.ENTROPY, None)
 
-# use the learned tree to predict the label of the training and test datasets
-predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
-predictdata_test = DecisionTree.predict(examples_test, "prediction", root)
+# # use the learned tree to predict the label of the training and test datasets
+# predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
+# predictdata_test = DecisionTree.predict(examples_test, "prediction", root)
+
+# examples_train, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_train, attrDict, labelCol, '0', '1')
+# examples_test, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_test, attrDict, labelCol, '0', '1')
+
+# sz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+sz = [1]
+for s in sz:
+    tree_list = BaggedTrees.BaggedDecisionTrees(examples_train, attrDict, labelCol, DecisionTree.GainMethods.ENTROPY, 500, s)
+
+    predictdata_train = BaggedTrees.predict(examples_train, 'prediction', tree_list)
+    predictdata_test = BaggedTrees.predict(examples_test, 'prediction', tree_list)
+
+    total_train = 0
+    wrong_train = 0
+    for example in predictdata_train:
+        if example[labelCol] != example["prediction"]:
+            wrong_train += 1
+        total_train += 1
+
+
+    print(f"{s}\t{wrong_train/total_train:.7f}")
 
 with open("predictions.csv",'w') as out:
     out.write("ID,Prediction\n")
