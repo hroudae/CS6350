@@ -4,4 +4,4 @@
 python3 hw2_adaboost.py
 python3 hw2_baggedtrees.py
 python3 hw2_randomforests.py
-python2 hw2_credit.py
+python3 hw2_credit.py
