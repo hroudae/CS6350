@@ -138,10 +138,10 @@ attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(ex
 
 trees = []
 for i in range(100):
-    # sample 1000 examples uniformly with replacement from training data
+    # sample 1000 examples uniformly without replacement from training data
     samples = random.sample(examples_train, 1000)
     # run learn bagged decision trees (500 trees) based on samples
-    tree_list = BaggedTrees.BaggedDecisionTrees(samples, attrDict, 'y', DecisionTree.GainMethods.ENTROPY, 500, 0.4)
+    tree_list = BaggedTrees.BaggedDecisionTrees(samples, attrDict, 'y', DecisionTree.GainMethods.ENTROPY, 500, 1)
     trees.append(tree_list)
 
 # for each test example, compute prediction of the first tree of each bagged decision tree

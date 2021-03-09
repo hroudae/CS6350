@@ -89,7 +89,7 @@ for sz in subsetSizes:
             errorFile.write(f"{depth},{wrong_train/total_train:.7f},{wrong_test/total_test:.7f}\n")
 
 print("Training and Test dataset errors per number of trees written to bank_errors_randforests_featsz[sz].csv")
-print("where [sz] is the size of the number pf features randomly selected in tree creation.")
+print("where [sz] is the size of the number of features randomly selected in tree creation.")
 
 
 
@@ -142,10 +142,10 @@ attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(ex
 
 trees = []
 for i in range(100):
-    # sample 1000 examples uniformly with replacement from training data
+    # sample 1000 examples uniformly without replacement from training data
     samples = random.sample(examples_train, 1000)
     # run learn random forests (500 trees) based on samples
-    tree_list = RandomForest.RandomForests(samples, attrDict, 'y', DecisionTree.GainMethods.ENTROPY, 500, 4, 0.4)
+    tree_list = RandomForest.RandomForests(samples, attrDict, 'y', DecisionTree.GainMethods.ENTROPY, 500, 4, 1)
     trees.append(tree_list)
 
 # for each test example, compute prediction of the first tree of each bagged decision tree
