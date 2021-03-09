@@ -103,7 +103,7 @@ attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(ex
 # examples_test, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_test, attrDict, labelCol, '0', '1')
 
 # sz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-sz = [1]
+sz = [0.1]
 for s in sz:
     tree_list = BaggedTrees.BaggedDecisionTrees(examples_train, attrDict, labelCol, DecisionTree.GainMethods.ENTROPY, 500, s)
 

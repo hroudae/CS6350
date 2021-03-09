@@ -2,7 +2,7 @@
 # Author: Evan Hrouda
 # Purpose: Perform AdaBoost, Bagged Trees, and Random Forests on the credit dataset
 ##########
-import random
+import math
 import sys
 sys.path.append("../DecisionTree")
 sys.path.append("../PreProcess")
@@ -97,7 +97,7 @@ temp, examples_train = PreProcess.numerical2binary_MedianThreshold_Replace(examp
 attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(examples_test, attrDict, medianList)
 
 print("T\tTraining Data\tTest Data")
-for depth in range(187, maxDepth+1):
+for depth in range(1, maxDepth+1):
     tree_list = BaggedTrees.BaggedDecisionTrees(examples_train, attrDict, labelCol, DecisionTree.GainMethods.ENTROPY, depth, 0.4)
 
     predictdata_train = BaggedTrees.predict(examples_train, 'prediction', tree_list)
@@ -203,7 +203,41 @@ for depth in range(1, maxDepth+1):
         total_test += 1
 
     print(f"{depth}\t{wrong_train/total_train:.7f}\t{wrong_test/total_test:.7f}")
-    with open("credit_errors_adaboost.csv", 'a') as f:
+    with open("credit_errors_adaboost.csv", 'a') as errorFile:
         errorFile.write(f"{depth},{wrong_train/total_train:.7f},{wrong_test/total_test:.7f}\n")\
 
 print("Training and Test dataset errors per number of trees written to credit_errors_adaboost.csv")
+
+
+
+
+print()
+print()
+print()
+print("********** Part 3  **********")
+print("Single Decision Tree experiment")
+
+print("T\tTraining Data\tTest Data")
+root = DecisionTree.Tree(None)
+root.depth = 0
+DecisionTree.ID3(examples_train, attrDict, labelCol, root, math.inf, DecisionTree.GainMethods.ENTROPY, None)
+
+# use the learned tree to predict the label of the training and test datasets
+predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
+predictdata_test = DecisionTree.predict(examples_test, "prediction", root)
+
+# calculate the error of the training and test dataset
+total_train = 0
+wrong_train = 0
+for example in predictdata_train:
+    if example[labelCol] != example["prediction"]:
+        wrong_train += 1
+    total_train += 1
+total_test = 0
+wrong_test = 0
+for example in predictdata_test:
+    if example[labelCol] != example["prediction"]:
+        wrong_test += 1
+    total_test += 1
+
+print(f"{wrong_train/total_train:.7f}\t{wrong_test/total_test:.7f}")
