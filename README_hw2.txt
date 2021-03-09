@@ -1,7 +1,8 @@
 To run the program to produce the results specified in homework 2, there
 are two shell scripts: EnsembleLearning/run.sh and 
 LinearRegression/run.sh. These will call the five python scripts 
-that produce the specified data.
+that produce the specified data. They must be run while inside their
+respective directories. 
 
 EnsembleLearning/run.sh runs the folowing python scripts:
 
