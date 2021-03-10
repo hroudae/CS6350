@@ -9,6 +9,7 @@ sys.path.append("../DecisionTree")
 sys.path.append("../PreProcess")
 sys.path.append("../EnsembleLearning")
 
+import utilities
 import DecisionTree
 import PreProcess
 import AdaBoost
@@ -63,6 +64,13 @@ labelCol = 'income>50K'
 examples_train = DecisionTree.parseCSV(train_data, cols)[1:]
 examples_test = DecisionTree.parseCSV(test_data, cols_test)[1:]
 
+# replace ages with their decade
+attrDict['age'], examples_train = utilities.replaceContinuous_Decades(examples_train, 'age')
+testattr, examples_test = utilities.replaceContinuous_Decades(examples_test, 'age')
+for age in testattr:
+    if age not in attrDict['age']:
+        attrDict['age'].append(age)
+
 # quartilesList = PreProcess.replaceContinuous_Quartiles(examples_train, attrDict)
 # # use the median of the training data to replace the numerical values of both datasets
 # temp, examples_train = PreProcess.replaceContinuous_Quartiles_Replace(examples_train, attrDict, quartilesList)
@@ -72,53 +80,29 @@ medianList = PreProcess.numerical2binary_MedianThreshold(examples_train, attrDic
 temp, examples_train = PreProcess.numerical2binary_MedianThreshold_Replace(examples_train, attrDict, medianList)
 attrDict, examples_test = PreProcess.numerical2binary_MedianThreshold_Replace(examples_test, attrDict, medianList)
 
-# for depth in range(1,20):
-#     root = DecisionTree.Tree(None)
-#     root.depth = 0
-#     DecisionTree.ID3(examples_train, attrDict, labelCol, root, depth, DecisionTree.GainMethods.ENTROPY, None)
 
-#     # use the learned tree to predict the label of the training and test datasets
-#     predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
-#     predictdata_test = DecisionTree.predict(examples_test, "prediction", root)
-
-#     # calculate the error of the training and test dataset
-#     total_train = 0
-#     wrong_train = 0
-#     for example in predictdata_train:
-#         if example[labelCol] != example["prediction"]:
-#             wrong_train += 1
-#         total_train += 1
-
-#     print(f"{depth}\t{wrong_train/total_train:.7f}")
-
-# root = DecisionTree.Tree(None)
-# root.depth = 0
-# DecisionTree.ID3(examples_train, attrDict, labelCol, root, 6, DecisionTree.GainMethods.ENTROPY, None)
-
-# # use the learned tree to predict the label of the training and test datasets
-# predictdata_train = DecisionTree.predict(examples_train, "prediction", root)
-# predictdata_test = DecisionTree.predict(examples_test, "prediction", root)
-
-# examples_train, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_train, attrDict, labelCol, '0', '1')
+examples_train, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_train, attrDict, labelCol, '0', '1')
 # examples_test, AdaBoostAttrDict = AdaBoost.stringBinaryLabel2numerical(examples_test, attrDict, labelCol, '0', '1')
 
-# sz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-sz = [0.1]
-for s in sz:
-    tree_list = BaggedTrees.BaggedDecisionTrees(examples_train, attrDict, labelCol, DecisionTree.GainMethods.ENTROPY, 500, s)
+a_list, hyp_list = AdaBoost.AdaBoost(examples_train, AdaBoostAttrDict, labelCol, DecisionTree.GainMethods.ENTROPY, 500)
 
-    predictdata_train = BaggedTrees.predict(examples_train, 'prediction', tree_list)
-    predictdata_test = BaggedTrees.predict(examples_test, 'prediction', tree_list)
+predictdata_train = AdaBoost.predict(examples_train, 'prediction', a_list, hyp_list)
+predictdata_test = AdaBoost.predict(examples_test, 'prediction', a_list, hyp_list)
 
-    total_train = 0
-    wrong_train = 0
-    for example in predictdata_train:
-        if example[labelCol] != example["prediction"]:
-            wrong_train += 1
-        total_train += 1
+predictdata_train, oldAttrDict = AdaBoost.numericalLabel2string(predictdata_train, AdaBoostAttrDict, labelCol, '0', '1')
+predictdata_train, oldAttrDict = AdaBoost.numericalLabel2string(predictdata_train, AdaBoostAttrDict, 'prediction', '0', '1')
+# predictdata_test, oldAttrDict = AdaBoost.numericalLabel2string(predictdata_test, AdaBoostAttrDict, labelCol, '0', '1')
+predictdata_test, oldAttrDict = AdaBoost.numericalLabel2string(predictdata_test, AdaBoostAttrDict, 'prediction', '0', '1')
+
+total_train = 0
+wrong_train = 0
+for example in predictdata_train:
+    if example[labelCol] != example["prediction"]:
+        wrong_train += 1
+    total_train += 1
 
 
-    print(f"{s}\t{wrong_train/total_train:.7f}")
+print(f"{wrong_train/total_train:.7f}")
 
 with open("predictions.csv",'w') as out:
     out.write("ID,Prediction\n")
