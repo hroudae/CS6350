@@ -37,13 +37,13 @@ def BaggedDecisionTrees(data, attrDict, labelCol, gainMethod, T, samplesize):
 #####
 def predict(data, predictCol, trees):
     import copy
-    predcitData = copy.deepcopy(data)
+    predictData = copy.deepcopy(data)
 
-    for example in predcitData:
+    for example in predictData:
         # pick the label predicted the most
         example[predictCol] = predict_example(example, predictCol, trees)
 
-    return predcitData
+    return predictData
 
 #####
 # Author: Evan Hrouda
