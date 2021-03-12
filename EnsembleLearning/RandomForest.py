@@ -36,13 +36,13 @@ def RandomForests(data, attrDict, labelCol, gainMethod, T, featureSetSize, sampl
 #####
 def predict(data, predictCol, forest):
     import copy
-    predcitData = copy.deepcopy(data)
+    predictData = copy.deepcopy(data)
 
-    for example in predcitData:
+    for example in predictData:
         # pick the label predicted the most
         example[predictCol] = predict_example(example, predictCol, forest)
 
-    return predcitData
+    return predictData
 
 #####
 # Author: Evan Hrouda

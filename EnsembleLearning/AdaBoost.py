@@ -87,8 +87,8 @@ def AdaBoost(data, attrDict, labelCol, gainMethod, T):
 #####
 def predict(data, predictCol, a_list, hyp_list):
     import copy
-    predcitData = copy.deepcopy(data)
-    for example in predcitData:
+    predictData = copy.deepcopy(data)
+    for example in predictData:
         hyp_sum = 0
         for idx, hyp in enumerate(hyp_list):
             hyp_sum += a_list[idx]*DecisionTree.predict_example(example, predictCol, hyp)
@@ -96,7 +96,7 @@ def predict(data, predictCol, a_list, hyp_list):
             example[predictCol] = -1
         else:
             example[predictCol] = 1
-    return predcitData
+    return predictData
 
 #####
 # Author: Evan Hourda
