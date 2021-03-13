@@ -20,7 +20,6 @@ r = 0.1
 T = 10
 w = Perceptron.StandardPerceptron(x, y, r, T)
 print(f"Learned weight vector: {w}")
-train_predictions = Perceptron.predict_StandardPerceptron(x, w)
 
 test_predictions = Perceptron.predict_StandardPerceptron(x_test, w)
 # if prediction is different, difference will be +-2, if same, will be 0
@@ -29,9 +28,36 @@ print(f"Test Error after {T} epochs: {numWrong/len(y_test)}")
 
 
 
-
-print()
-print()
 print()
 print("********** Part 2a **********")
 print("Voted Perceptron experiments")
+
+r = 0.1
+T = 10
+wghts = Perceptron.VotedPerceptron(x, y, r, T)
+# write weight vectors to file
+with open("votedperceptron_weights.csv", 'w') as f:
+    for wc in wghts:
+        f.write(f"{wc[0]},{wc[1]}\n")
+
+test_predictions = Perceptron.predict_VotedPerceptron(x_test, wghts)
+# if prediction is different, difference will be +-2, if same, will be 0
+numWrong = sum(abs(test_predictions-y_test) / 2)
+print(f"Test Error after {T} epochs: {numWrong/len(y_test)}")
+
+
+
+
+print()
+print("********** Part 2a **********")
+print("Average Perceptron experiments")
+
+r = 0.1
+T = 10
+a = Perceptron.AveragedPerceptron(x, y, r, T)
+print(f"Learned weight vector: {a}")
+
+test_predictions = Perceptron.predict_AveragedPerceptron(x_test, a)
+# if prediction is different, difference will be +-2, if same, will be 0
+numWrong = sum(abs(test_predictions-y_test) / 2)
+print(f"Test Error after {T} epochs: {numWrong/len(y_test)}")
