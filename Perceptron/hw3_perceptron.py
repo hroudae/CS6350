@@ -29,7 +29,7 @@ print(f"Test Error after {T} epochs: {numWrong/len(y_test)}")
 
 
 print()
-print("********** Part 2a **********")
+print("********** Part 2b **********")
 print("Voted Perceptron experiments")
 
 r = 0.1
@@ -37,8 +37,10 @@ T = 10
 wghts = Perceptron.VotedPerceptron(x, y, r, T)
 # write weight vectors to file
 with open("votedperceptron_weights.csv", 'w') as f:
+    f.write(f"Weight Vector,Count\n")
     for wc in wghts:
         f.write(f"{wc[0]},{wc[1]}\n")
+print("Weight vectors and their counts have been written to votedperceptron_weights.csv")
 
 test_predictions = Perceptron.predict_VotedPerceptron(x_test, wghts)
 # if prediction is different, difference will be +-2, if same, will be 0
@@ -49,7 +51,7 @@ print(f"Test Error after {T} epochs: {numWrong/len(y_test)}")
 
 
 print()
-print("********** Part 2a **********")
+print("********** Part 2c **********")
 print("Average Perceptron experiments")
 
 r = 0.1
