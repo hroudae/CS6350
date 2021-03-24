@@ -21,11 +21,34 @@ def numerical2binary_MedianThreshold(data, attrDict):
             # collect the integer data and find the median
             valuesList = []
             for example in data:
-                valuesList.append(int(example[attr]))
+                valuesList.append(float(example[attr]))
             attrMedian = statistics.median(valuesList)
             medianList[attr] = attrMedian
 
     return medianList
+
+#####
+# Author: Evan Hrouda
+# Purpose: replace all the numerical attributes with it's relation to the median
+#          "larger" for those larger, "equal" for those equal, and "smaller" for 
+#          those less than.
+#####
+def numerical2binary_MedianThreshold_Replace3Categories(data, attrDict, medianList):
+    import copy
+    attrDictCopy = copy.deepcopy(attrDict)
+
+    for attr in medianList:
+        # replace the attribute value with the new threshold value
+        for example in data:
+            if float(example[attr]) > medianList[attr]:
+                example[attr] = "larger"
+            elif float(example[attr]) == medianList[attr]:
+                example[attr] = "equal"
+            else:
+                example[attr] = "smaller"
+        attrDictCopy[attr] = ["smaller", "equal", "larger"]
+
+    return attrDictCopy, data
 
 #####
 # Author: Evan Hrouda
@@ -39,7 +62,7 @@ def numerical2binary_MedianThreshold_Replace(data, attrDict, medianList):
     for attr in medianList:
         # replace the attribute value with the new threshold value
         for example in data:
-            if int(example[attr]) > medianList[attr]:
+            if float(example[attr]) > medianList[attr]:
                 example[attr] = "larger"
             else:
                 example[attr] = "smaller"
@@ -101,7 +124,7 @@ def replaceContinuous_Quartiles(data, attrDict):
             # collect the integer data and find the median
             valuesList = []
             for example in data:
-                valuesList.append(int(example[attr]))
+                valuesList.append(float(example[attr]))
             quartiles = statistics.quantiles(valuesList, n=4)
             quartilesList[attr] = quartiles
 
@@ -118,11 +141,11 @@ def replaceContinuous_Quartiles_Replace(data, attrDict, quartilesList):
     for attr in quartilesList:
         # replace the attribute value with the new threshold value
         for example in data:
-            if int(example[attr]) < quartilesList[attr][0]:
+            if float(example[attr]) < quartilesList[attr][0]:
                 example[attr] = 'Q1'
-            elif int(example[attr]) < quartilesList[attr][1]:
+            elif float(example[attr]) < quartilesList[attr][1]:
                 example[attr] = 'Q2'
-            elif int(example[attr]) < quartilesList[attr][2]:
+            elif float(example[attr]) < quartilesList[attr][2]:
                 example[attr] = 'Q3'
             else:
                 example[attr] = 'Q4'
