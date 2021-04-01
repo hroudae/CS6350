@@ -32,6 +32,24 @@ def parseCSV(csvFilePath, zero2neg):
 
 #####
 # Author: Evan Hrouda
+# Purpose: Parse a csv file into a feature matrix x. For data with no label
+#####
+def parseCSV_NoLabel(csvFilePath):
+    x = []
+
+    with open(csvFilePath, 'r') as csvFile:
+        csvReader = csv.reader(csvFile, delimiter=',')
+
+        for row in csvReader:
+            thisExample = [1.0]
+            thisExample += [float(row[i]) for i in range(len(row))]
+            x.append(thisExample)
+
+    x = np.matrix(x)
+    return x
+
+#####
+# Author: Evan Hrouda
 # Purpose: implement the standard Perceptron algorithm
 #####
 def StandardPerceptron(x, y, r, T):
