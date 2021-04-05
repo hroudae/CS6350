@@ -93,11 +93,12 @@ print()
 print()
 print("********** Part 3 ************")
 print("Part 3a")
+print("Dual domain SVM")
 
 print("C (*873)\tTrain Error\tTest Error\tW, b")
 for i in range(len(C)):
     w, b = SVM.SVM_dual(x, y, C[i])
-    print(f"w: {w}\tb: {b}")
+    # print(f"w: {w}\tb: {b}")
     train_predicts = SVM.predict_SVM_dual(x, w, b)
     numWrong = sum(abs(train_predicts-y) / 2)
     train_err = numWrong/len(y)
