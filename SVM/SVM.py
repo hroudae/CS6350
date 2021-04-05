@@ -127,13 +127,10 @@ def predict_SVM_primalSGD(x, w):
 # Purpose: The objective function for dual SVM to minimize
 #####
 def SVM_dualObj(a, x, y):
-    objSum = 0
-    for i in range(len(x)):
-        for j in range(len(x)):
-            objSum += np.asscalar(y[i]*y[j]*a[i]*a[j]*np.dot(x[i], x[j].T))
-    objSum *= 0.5
+    objSum = y * a * x
+    objSum = 0.5 * np.dot(objSum, objSum.T)
     objSum -= np.sum(a)
-    return objSum
+    return np.asscalar(objSum)
 
 #####
 # Author: Evan Hrouda
@@ -154,15 +151,15 @@ def SVM_dualRecoverB(a, x, y, w, C):
 # Purpose: Implement SVM in dual domain
 #####
 def SVM_dual(x, y, C):
-    # get rid or augmented one
+    # get rid of augmented one
     x = np.delete(x, x.shape[1]-1, 1)
     alpha0 = np.zeros((1,x.shape[0]))
     bnds = [(0, C) for i in range(x.shape[0])]
     cons = {'type': 'eq', 'fun': lambda a: np.asscalar(np.dot(a,y.T))}
     res = minimize(SVM_dualObj, alpha0, args=(x, y), method='SLSQP', bounds=bnds, constraints=cons)
 
-    w = multi_dot([res, y, x])
-    b = SVM_dualRecoverB(res, x, y, w, C)
+    w = y * res.x * x
+    b = SVM_dualRecoverB(res.x, x, y, w, C)
 
     return w, b
 
@@ -172,6 +169,8 @@ def SVM_dual(x, y, C):
 #          from the SVM in dual domain
 #####
 def predict_SVM_dual(x, w, b):
+    # get rid of augmented one
+    x = np.delete(x, x.shape[1]-1, 1)
     predictions = []
     for ex in x:
         p = np.dot(w, ex.T) + b
