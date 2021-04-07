@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.linalg import multi_dot
 from scipy.optimize import minimize
+import math
 
 
 #####
@@ -148,7 +149,7 @@ def SVM_dualRecoverB(a, x, y, w, C):
 
 #####
 # Author: Evan Hrouda
-# Purpose: Implement SVM in dual domain
+# Purpose: Implement SVM in dual domain. SLSQP solver used due to need for both bounds and constraints
 #####
 def SVM_dual(x, y, C):
     # get rid of augmented one
@@ -165,7 +166,7 @@ def SVM_dual(x, y, C):
 
 #####
 # Author: Evan Hrouda
-# Purpose: predict the labels of the x matrix using the weight vector an bias
+# Purpose: predict the labels of the x matrix using the weight vector and bias
 #          from the SVM in dual domain
 #####
 def predict_SVM_dual(x, w, b):
@@ -174,6 +175,74 @@ def predict_SVM_dual(x, w, b):
     predictions = []
     for ex in x:
         p = np.dot(w, ex.T) + b
+        if p < 0:
+            predictions.append(-1)
+        else:
+            predictions.append(1)
+    return np.array(predictions)
+
+#####
+# Author: Evan Hrouda
+# Purpose: the gaussian kernel, returns a square matrix of each K(x_i, x_j)
+#####
+def GaussianKernel(x, z, g):
+    # ||x-z||^2 = ||x||^2 + ||z||^2 - 2*x^T*z
+    normsSqrd = np.sum(np.multiply(x,z), axis=1) # norm^2 of each x_i
+    return np.exp(-1 * (normsSqrd + normsSqrd.T - 2 * np.dot(x,z.T)) / g)
+
+#####
+# Author: Evan Hrouda
+# Purpose: SVM objective in dual domain with guassian kernel
+#####
+def SVM_dualObj_GaussianKernel_slow(a, x, y, g):
+    osum = 0
+    for i in range(a.shape[0]):
+        for j in range(a.shape[0]):
+            osum += y[i]*y[j]*a[i]*a[j]*math.exp(-1 * np.linalg.norm(x[i] - x[j])**2 / g)
+    osum *= 0.5
+    return np.asscalar(osum-np.sum(a))
+
+#####
+# Author: Evan Hrouda
+# Purpose: The objective function for dual SVM to minimize the gaussian kernel
+#####
+def SVM_dualObj_GaussianKernel(a, y, k):
+    objSum = sum(y * a * k) # sum over j
+    objSum = 0.5 * sum(y * a * objSum.T) # sum over i
+    objSum -= np.sum(a)
+    return np.asscalar(objSum)
+
+#####
+# Author: Evan Hrouda
+# Purpose: Implement SVM in dual domain. SLSQP solver used due to need for both bounds and constraints
+#          Utilizes the gaussian kernel
+#####
+def SVM_dualKernelGaussian(x, y, C, g):
+    # get rid of augmented one
+    x = np.delete(x, x.shape[1]-1, 1)
+    gausMatrix = GaussianKernel(x, x, g) # always same since based on x and g
+    alpha0 = np.zeros((1,x.shape[0]))
+    bnds = [(0, C) for i in range(x.shape[0])]
+    cons = {'type': 'eq', 'fun': lambda a: np.asscalar(np.dot(a,y.T))}
+    res = minimize(SVM_dualObj_GaussianKernel, alpha0, args=(y, gausMatrix), method='SLSQP', bounds=bnds, constraints=cons)
+
+    return res.x
+
+#####
+# Author: Evan Hrouda
+# Purpose: predict the labels of the x matrix using the a vector
+#          from the SVM in dual domain with the kernel function
+#####
+def predict_SVM_dualKernelGaussian(x, a, x_train, y, g):
+    # get rid of augmented one
+    x = np.delete(x, x.shape[1]-1, 1)
+    x_train = np.delete(x_train, x_train.shape[1]-1, 1)
+    predictions = []
+    for ex in x:
+        p = 0
+        for i in range(a.shape[0]):
+            k = math.exp(-1 * np.linalg.norm(x_train[i] - ex)**2 / g)
+            p += np.asscalar(a[i] * y[i] * k)
         if p < 0:
             predictions.append(-1)
         else:
