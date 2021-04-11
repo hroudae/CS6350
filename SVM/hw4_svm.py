@@ -88,25 +88,65 @@ for i in range(len(C)):
 
 
 
-print()
-print()
-print()
-print("********** Part 3 ************")
-print("Part 3a")
-print("Dual domain SVM")
+# print()
+# print()
+# print()
+# print("********** Part 3 ************")
+# print("Part 3a")
+# print("Dual domain SVM")
 
-print("C (*873)\tTrain Error\tTest Error\tW, b")
-for i in range(len(C)):
-    w, b = SVM.SVM_dual(x, y, C[i])
-    train_predicts = SVM.predict_SVM_dual(x, w, b)
-    numWrong = sum(abs(train_predicts-y) / 2)
-    train_err = numWrong/len(y)
+# print("C (*873)\tTrain Error\tTest Error\tW, b")
+# for i in range(len(C)):
+#     w, b = SVM.SVM_dual(x, y, C[i])
+#     train_predicts = SVM.predict_SVM_dual(x, w, b)
+#     numWrong = sum(abs(train_predicts-y) / 2)
+#     train_err = numWrong/len(y)
 
-    test_predicts = SVM.predict_SVM_dual(x_test, w, b)
-    numWrong = sum(abs(test_predicts-y_test) / 2)
-    test_err = numWrong/len(y_test)
+#     test_predicts = SVM.predict_SVM_dual(x_test, w, b)
+#     numWrong = sum(abs(test_predicts-y_test) / 2)
+#     test_err = numWrong/len(y_test)
     
-    print(f"{C[i]*873:.0f}\t\t{train_err:.7f}\t{test_err:.7f}\t{w}, {b}")
+#     print(f"{C[i]*873:.0f}\t\t{train_err:.7f}\t{test_err:.7f}\t{w}, {b}")
+
+
+
+
+# print()
+# print()
+# print()
+# print("********** Part 3 ************")
+# print("Part 3b")
+# print("Dual domain SVM with Gaussian Kernel")
+
+# glist = [0.1, 0.5, 1, 5, 100]
+
+# supportList = []
+
+# print("g\tC (*873)\tTrain Error\tTest Error\tNumber of Support Vectors")
+# for g in glist:
+#     for i in range(len(C)):
+#         a = SVM.SVM_dualKernelGaussian(x, y, C[i], g)
+#         train_predicts = SVM.predict_SVM_dualKernelGaussian(x, a, x, y, g)
+#         numWrong = sum(abs(train_predicts-y) / 2)
+#         train_err = numWrong/len(y)
+
+#         test_predicts = SVM.predict_SVM_dualKernelGaussian(x_test, a, x, y, g)
+#         numWrong = sum(abs(test_predicts-y_test) / 2)
+#         test_err = numWrong/len(y_test)
+    
+#         print(f"{g}\t{C[i]*873:.0f}\t\t{train_err:.7f}\t{test_err:.7f}\t{(a!=0).sum()}")
+
+#         if C[i] == 500/873:
+#             supportList.append(a!=0)
+
+# print()
+# print("Shared support vectors between values of gamma with C=500/873:")
+# for i in range(len(glist)-1):
+#     count = 0
+#     for j in range(len(supportList[i])):
+#         if supportList[i][j] == supportList[i+1][j] and supportList[i][j] == True:
+#             count +=1
+#     print(f"{glist[i]}, {glist[i+1]}: {count}")
 
 
 
@@ -115,35 +155,20 @@ print()
 print()
 print()
 print("********** Part 3 ************")
-print("Part 3b")
-print("Dual domain SVM with Gaussian Kernel")
+print("Part 3d")
+print("Kernel Perceptron with Gaussian Kernel")
 
 glist = [0.1, 0.5, 1, 5, 100]
 
-supportList = []
-
-print("g\tC (*873)\tTrain Error\tTest Error\tNumber of Support Vectors")
+print("g\tTrain Error\tTest Error")
 for g in glist:
-    for i in range(len(C)):
-        a = SVM.SVM_dualKernelGaussian(x, y, C[i], g)
-        train_predicts = SVM.predict_SVM_dualKernelGaussian(x, a, x, y, g)
-        numWrong = sum(abs(train_predicts-y) / 2)
-        train_err = numWrong/len(y)
+    c = SVM.Perceptron_Kernel_Gaussian(x, y, g, T)
+    train_predicts = SVM.predict_Perceptron_Kernel_Gaussian(x, c, x, y, g)
+    numWrong = sum(abs(train_predicts-y) / 2)
+    train_err = numWrong/len(y)
 
-        test_predicts = SVM.predict_SVM_dualKernelGaussian(x_test, a, x, y, g)
-        numWrong = sum(abs(test_predicts-y_test) / 2)
-        test_err = numWrong/len(y_test)
+    test_predicts = SVM.predict_Perceptron_Kernel_Gaussian(x_test, c, x, y, g)
+    numWrong = sum(abs(test_predicts-y_test) / 2)
+    test_err = numWrong/len(y_test)
     
-        print(f"{g}\t{C[i]*873:.0f}\t\t{train_err:.7f}\t{test_err:.7f}\t{(a!=0).sum()}")
-
-        if C[i] == 500/873:
-            supportList.append(a!=0)
-
-print()
-print("Shared support vectors between values of gamma with C=500/873:")
-for i in range(len(glist)-1):
-    count = 0
-    for j in range(len(supportList[i])):
-        if supportList[i][j] == supportList[i+1][j] and supportList[i][j] == True:
-            count +=1
-    print(f"{glist[i]}, {glist[i+1]}: {count}")
+    print(f"{g}\t{train_err:.7f}\t{test_err:.7f}")

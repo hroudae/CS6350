@@ -248,3 +248,44 @@ def predict_SVM_dualKernelGaussian(x, a, x_train, y, g):
         else:
             predictions.append(1)
     return np.array(predictions)
+
+#####
+# Author: Evan Hrouda
+# Purpose: Implement the kernel Perceptron algorithm
+#####
+def Perceptron_Kernel_Gaussian(x, y, g, T):
+    c = np.zeros(x.shape[0])
+    idxs = np.arange(x.shape[0])
+
+    # square matrix of values, x[i,j] = x[j,i]
+    k = GaussianKernel(x, x, g)
+    
+    for epoch in range(T):
+        # shuffle data by shuffling an array of indices
+        np.random.shuffle(idxs)
+
+        # for each training example
+        for i in idxs:
+            p = np.sum(c * y * k[:,i]) 
+            sgn = 1 if p > 0 else -1
+            if sgn != y[i]:
+                c[i] += 1
+    return c
+
+####
+# Author: Evan Hrouda
+# Purpose: Implement the kernel Perceptron algorithm
+#####
+def predict_Perceptron_Kernel_Gaussian(x, c, x_train, y, g):
+    predictions = []
+    for ex in x:
+        p = 0
+        for i in range(c.shape[0]):
+            k = math.exp(-1 * np.linalg.norm(x_train[i] - ex)**2 / g)
+            p += np.asscalar(c[i] * y[i] * k)
+        if p < 0:
+            predictions.append(-1)
+        else:
+            predictions.append(1)
+    return np.array(predictions)
+    
