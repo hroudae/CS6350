@@ -139,5 +139,3 @@ plt.title('Region with no NA')
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 plt.savefig("stats.png")
-
-print(df.dtypes)
