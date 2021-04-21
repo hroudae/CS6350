@@ -57,31 +57,32 @@ print(f"nodes: {nn.nodes}")
 print(f"y: {nn.y}")
 
 
+
+
+
 print()
 print()
 print("********** Part 3b **********")
-print("Neural Network SGD with bank data")
+print("Neural Network SGD with bank data and intializing the weights with random values from the Gaussian distribution")
 
 x, y = NeuralNetwork.parseCSV(train_data, True)
 x_test, y_test = NeuralNetwork.parseCSV(test_data, True)
 
-checkConverge = True
+checkConverge = False
 T = 100
 
 gammaList = [                 # gamma0, d
-    NeuralNetwork.GammaSchedule(0.1, 35), # 0.15, 30
-    NeuralNetwork.GammaSchedule(0.05, 20), # 10 0.1, 15
-    NeuralNetwork.GammaSchedule(0.05, 25), # 25 0.1, 20
-    NeuralNetwork.GammaSchedule(0.07, 18), # 50 0.075, 17.5
-    NeuralNetwork.GammaSchedule(0.01, 2.5)  # 100 0.02, 2
+    NeuralNetwork.GammaSchedule(1/8720, 40), # 0.15, 30 - 0.1, 35
+    NeuralNetwork.GammaSchedule(1/17440, 25), # 10 0.1, 15 - 0.05, 20
+    NeuralNetwork.GammaSchedule(1/34880, 35), # 25 0.1, 20 - 0.05, 25 - 0.05, 30
+    NeuralNetwork.GammaSchedule(7/87200, 25), # 50 0.075, 17.5 - 0.07, 18
+    NeuralNetwork.GammaSchedule(1/87200, 10)  # 100 0.02, 2 - 0.01, 2.5
     ]
 
-print("Width\tTrain Error\tTest Error\tgamma0\td")
-
 widths = [5, 10, 25, 50, 100]
-i = 0
-for width in widths:
-    # layers, numInputs, hiddenNodeCount, randInit
+
+print("Width\tTrain Error\tTest Error\tgamma0\t\td")
+for i, width in enumerate(widths):
     nn = NeuralNetwork.NeuralNet(3, x.shape[1], [width, width], True)
     nn_learned, loss = NeuralNetwork.NeuralNetwork_SGD(x, y, nn, gammaList[i], T, checkConverge)
 
@@ -93,7 +94,7 @@ for width in widths:
     numWrong = sum(abs(test_predicts-y_test) / 2)
     test_err = numWrong/len(y_test)
 
-    print(f"{width}\t{train_err:.7f}\t{test_err:.7f}\t{gammaList[i].gamma0}\t{gammaList[i].d}")
+    print(f"{width}\t{train_err:.7f}\t{test_err:.7f}\t{gammaList[i].gamma0:.7f}\t{gammaList[i].d}")
     
     # plots to check for convergence
     if checkConverge:
@@ -101,7 +102,27 @@ for width in widths:
         plt.xlabel("Iterations")
         plt.ylabel("Squared Loss")
         plt.plot([k for k in range(1,len(loss)+1)], loss)
-        plt.savefig(f"3b_{width}_d{gammaList[i].d}_g{gammaList[i].gamma0}.png", bbox_inches='tight')
-        print(f"Convergence plot save as: 3b_{width}_d{gammaList[i].d}_g{gammaList[i].gamma0}.png")
+        plt.savefig(f"3b_{width}.png", bbox_inches='tight')
+        print(f"Convergence plot save as: 3b_{width}.png")
         plt.close()
-    i +=1
+
+
+print()
+print()
+print("********** Part 3c **********")
+print("Neural Network SGD with bank data and intializing the weights to 0")
+
+print("Width\tTrain Error\tTest Error\tgamma0\t\td")
+for i, width in enumerate(widths):
+    nn = NeuralNetwork.NeuralNet(3, x.shape[1], [width, width], False)
+    nn_learned, loss = NeuralNetwork.NeuralNetwork_SGD(x, y, nn, gammaList[i], T, False)
+
+    train_predicts = NeuralNetwork.NeuralNetwork_SGD_predict(x, nn_learned)
+    numWrong = sum(abs(train_predicts-y) / 2)
+    train_err = numWrong/len(y)
+
+    test_predicts = NeuralNetwork.NeuralNetwork_SGD_predict(x_test, nn_learned)
+    numWrong = sum(abs(test_predicts-y_test) / 2)
+    test_err = numWrong/len(y_test)
+
+    print(f"{width}\t{train_err:.7f}\t{test_err:.7f}\t{gammaList[i].gamma0:.7f}\t{gammaList[i].d}")

@@ -33,7 +33,7 @@ class GammaSchedule:
 class NeuralNet:
     def __init__(self, layers, numInputs, hiddenNodeCount, randInit):
         self.layerCount = layers
-        # number of nodes at each layer
+        # number of nodes at each layer, output layer is 2 nodes since y is located at 1 and not 0
         self.layerNodeCounts = np.concatenate([np.array([numInputs]), np.array(hiddenNodeCount), np.array([2])])
         # create the matrix of nodes with layer 0 being input
         self.nodes = np.zeros((layers, np.amax(self.layerNodeCounts)))
@@ -159,8 +159,8 @@ def NeuralNetwork_SGD(x, y, nn, GammaSchedule, T, checkConverge):
             NeuralNetwork_Forwardpass(x[i], nn)
             # compute gradient of loss using backpropagation            
             NeuralNetwork_Backpropagation(y[i], nn)
-            # update the weights using calculated gradient
-            nn.weights = np.subtract(nn.weights, gamma*nn.dweights)
+            # update the weights using calculated gradient and treating this example as entire dataset
+            nn.weights = np.subtract(nn.weights, x.shape[0]*gamma*nn.dweights)
 
             iterations += 1
 
