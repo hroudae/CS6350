@@ -59,8 +59,8 @@ def parseCSV(csvFilePath, zero2neg):
         csvReader = csv.reader(csvFile, delimiter=',')
 
         for row in csvReader:
-            thisExample = [float(row[i]) for i in range(len(row)-1)]
-            thisExample += [1.0]
+            thisExample = [1.0]
+            thisExample += [float(row[i]) for i in range(len(row)-1)]
             x.append(thisExample)
             # need to convert label 0 to -1
             if zero2neg:
