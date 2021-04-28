@@ -13,3 +13,12 @@ MAP and ML estimations are found in the file LogisticRegression/LogisticRegressi
 
 The implementation of the nerual network is found in the file NeuralNetworks/NeuralNetwork.py
 
+Additionally, the shell script runs two python scripts that implement the
+two PyTorch neural networks described in the homework handout.
+
+The python script NeuralNetworks/hw5_pytorch_tanh.py implements the varied
+depth and width network that uses the tanh activation function and Xavier initialization.
+
+The python script NeuralNetworks/hw5_pytorch_RELU.py implements the varied
+depth and width network that uses the RELU activation function and He initialization.
+
