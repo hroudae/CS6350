@@ -34,10 +34,11 @@ class NeuralNet:
     def __init__(self, layers, numInputs, hiddenNodeCount, randInit):
         self.layerCount = layers
         # number of nodes at each layer, output layer is 2 nodes since y is located at 1 and not 0
-        self.layerNodeCounts = np.concatenate([np.array([numInputs]), np.array(hiddenNodeCount), np.array([2])])
+        # add one to each hidden layer for the bias term
+        self.layerNodeCounts = np.concatenate([np.array([numInputs]), np.array(hiddenNodeCount)+1, np.array([2])])
         # create the matrix of nodes with layer 0 being input
         self.nodes = np.zeros((layers, np.amax(self.layerNodeCounts)))
-        self.nodes[:,0] = np.ones(layers) # set first to 1
+        self.nodes[:,0] = np.ones(layers) # set first (bias) to 1
         # Layer count by maximum hidden layers matrix
         self.weights = np.zeros((layers, np.amax(self.layerNodeCounts), np.amax(self.layerNodeCounts)))
         if randInit == True:
