@@ -13,7 +13,7 @@ test_data = "bank-note/test.csv"
 print()
 print("********** Part 3a **********")
 print("Backpropagation test with values from paper problem 3.")
-nn = NeuralNetwork.NeuralNet(3, 3, [3, 3], False)
+nn = NeuralNetwork.NeuralNet(3, 3, [2, 2], False)
 w = [
         [ # layer 0->1, w^1s
             [ 0,  0,  0], # empty
