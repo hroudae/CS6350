@@ -15,8 +15,7 @@ train_data = "data/train_final.csv"
 df = read_csv(train_data)
 
 # sum capital gains into one
-df['capital'] = df[['capital.gain', 'capital.loss']].sum(axis=1)
-
+df['capital'] = df['capital.gain'] - df['capital.loss']
 
 # Plot and save a correlation matrix
 num_feat = df.select_dtypes(include=['float', 'int']).columns
@@ -127,7 +126,6 @@ i=0
 for cats in df.select_dtypes(include=['object', 'category']).columns:
     plt.subplot(5, 3, i+1)
     i += 1
-    # sns.countplot(x='income>50K', data=df, hue=cats)
     sns.countplot(y=cats, data=df, hue='income>50K')
     plt.title(cats)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
